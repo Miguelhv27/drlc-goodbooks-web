@@ -1,0 +1,270 @@
+@import "tailwindcss";
+
+@theme {
+  --color-papel: #f6efe2;
+  --color-papel2: #efe4cf;
+  --color-tarjeta: #fbf6ea;
+  --color-tinta: #2b1d14;
+  --color-nogal: #3b2a20;
+  --color-bordo: #7a2e2e;
+  --color-verde: #1f4b3a;
+  --color-laton: #b08d57;
+  --color-cuero: #8a5a3b;
+  --color-salvia: #6b7f5e;
+  --color-arena: #c9b99a;
+  --color-gris: #5a4a3c;
+
+  --font-titulo: "Libre Baskerville", Georgia, "Times New Roman", serif;
+  --font-texto: "Source Serif 4", Georgia, "Times New Roman", serif;
+  --font-data: "Inter", ui-sans-serif, system-ui, sans-serif;
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 5.5rem;
+}
+
+body {
+  background: var(--color-papel);
+  color: var(--color-tinta);
+  font-family: var(--font-texto);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Textura sutil de papel */
+.paper-grain::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.5;
+  z-index: 0;
+  background-image: radial-gradient(rgba(122, 46, 46, 0.035) 1px, transparent 1px),
+    radial-gradient(rgba(59, 42, 32, 0.03) 1px, transparent 1px);
+  background-size: 22px 22px, 34px 34px;
+  background-position: 0 0, 11px 17px;
+}
+
+h1, h2, h3, h4 {
+  font-family: var(--font-titulo);
+  color: var(--color-nogal);
+}
+
+.titulo-h1 { font-size: clamp(1.9rem, 4.2vw, 3.1rem); line-height: 1.15; font-weight: 700; }
+.titulo-h2 {
+  font-size: clamp(1.45rem, 2.6vw, 2.05rem);
+  font-weight: 700;
+  border-bottom: 3px double var(--color-laton);
+  padding-bottom: 0.5rem;
+}
+.titulo-h3 { font-size: 1.12rem; font-weight: 700; }
+
+.datos { font-family: var(--font-data); font-variant-numeric: tabular-nums; }
+
+/* Estante decorativo (lomos de libros, solo CSS) */
+.estante {
+  height: 14px;
+  border-radius: 3px 3px 0 0;
+  border-bottom: 6px solid var(--color-cuero);
+  box-shadow: 0 3px 0 rgba(59, 42, 32, 0.18);
+}
+
+/* Ficha de catalogo */
+.ficha {
+  background: var(--color-tarjeta);
+  border: 1px solid var(--color-arena);
+  border-left: 6px solid var(--color-bordo);
+  border-radius: 4px;
+  box-shadow: 3px 3px 0 rgba(59, 42, 32, 0.13);
+}
+.ficha-laton { border-left-color: var(--color-laton); }
+.ficha-verde { border-left-color: var(--color-verde); }
+
+/* Tarjeta generica */
+.tarjeta {
+  background: var(--color-tarjeta);
+  border: 1px solid var(--color-arena);
+  border-radius: 6px;
+}
+
+/* Boton de explicacion teorica */
+.btn-teoria {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-family: var(--font-data);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--color-nogal);
+  background: var(--color-papel2);
+  border: 1.5px solid var(--color-laton);
+  border-radius: 999px;
+  padding: 0.3rem 0.85rem;
+  cursor: pointer;
+  transition: background 0.18s, color 0.18s, transform 0.12s;
+}
+.btn-teoria:hover { background: var(--color-laton); color: #fffdf7; }
+.btn-teoria:active { transform: scale(0.97); }
+.btn-teoria[aria-expanded="true"] { background: var(--color-nogal); border-color: var(--color-nogal); color: #f3e9d7; }
+
+.teoria-body {
+  overflow: hidden;
+  transition: max-height 0.32s ease, opacity 0.28s ease;
+}
+
+.teoria-card {
+  border: 1px solid rgba(176, 141, 87, 0.45);
+  background: rgba(239, 228, 207, 0.45);
+  border-radius: 6px;
+}
+.nota-card {
+  border: 1px solid var(--color-arena);
+  background: var(--color-tarjeta);
+  border-radius: 6px;
+}
+
+/* Tabs / radios */
+.tab {
+  font-family: var(--font-data);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  border-radius: 999px;
+  border: 1px solid var(--color-arena);
+  background: var(--color-tarjeta);
+  color: var(--color-nogal);
+  padding: 0.38rem 0.9rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+.tab:hover { border-color: var(--color-laton); background: var(--color-papel2); }
+.tab.activa {
+  background: var(--color-nogal);
+  border-color: var(--color-nogal);
+  color: #f3e9d7;
+  box-shadow: 0 1px 4px rgba(43, 29, 20, 0.35);
+}
+.tab .punto { border: 1px solid rgba(0, 0, 0, 0.2); }
+
+/* Barra superior: lomo de cuero oscuro (stSidebar en app.py) */
+.nav-fija {
+  background: var(--color-nogal);
+  border-bottom: 4px solid var(--color-laton);
+  box-shadow: 0 2px 12px rgba(43, 29, 20, 0.35);
+}
+.nav-fija .nav-chip { color: #d9c9a8; }
+.nav-fija .nav-chip:hover { color: #fffdf7; }
+
+/* Logo de lomos */
+.logo-libro {
+  background: #241a12;
+  border: 1px solid rgba(176, 141, 87, 0.7);
+}
+.nav-texto { color: #f3e9d7; }
+
+/* Codigo inline en markdown */
+.md-code {
+  background: var(--color-papel2);
+  color: var(--color-bordo);
+  border: 1px solid rgba(201, 185, 154, 0.6);
+  border-radius: 4px;
+  padding: 0.05rem 0.3rem;
+  font-size: 0.82em;
+}
+
+/* Selector nativo con el tema */
+.selector {
+  border-radius: 6px;
+  border: 1px solid var(--color-arena);
+  background: var(--color-tarjeta);
+  color: var(--color-nogal);
+  padding: 0.5rem 0.75rem;
+  font-size: 0.85rem;
+  outline: none;
+  max-width: 100%;
+}
+.selector:focus { border-color: var(--color-laton); }
+
+/* Marcas de la demo */
+.pos-dato {
+  background: var(--color-nogal);
+  color: #f3e9d7;
+}
+.marca-acierto {
+  background: rgba(31, 75, 58, 0.92);
+  color: #eaf2ea;
+}
+.marca-escondido {
+  background: rgba(122, 46, 46, 0.92);
+  color: #f6e9e2;
+}
+
+/* Range con acento de laton */
+input[type="range"].w-40 { accent-color: var(--color-bordo); }
+
+/* Carrusel: scroll-snap nativo */
+.carrusel {
+  display: flex;
+  gap: 1rem;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  padding: 0.25rem 0.25rem 0.9rem;
+}
+.carrusel::-webkit-scrollbar { display: none; }
+.carrusel > * { scroll-snap-align: start; flex: 0 0 auto; }
+
+/* Tablas */
+table.biblio { border-collapse: collapse; width: 100%; font-size: 0.9rem; }
+table.biblio thead th {
+  background: var(--color-papel2);
+  color: var(--color-nogal);
+  border-bottom: 2px solid var(--color-laton);
+  font-family: var(--font-data);
+  font-weight: 600;
+  text-align: left;
+  padding: 0.5rem 0.7rem;
+}
+table.biblio tbody td { border-bottom: 1px solid var(--color-arena); padding: 0.45rem 0.7rem; }
+table.biblio tbody tr:hover { background: rgba(176, 141, 87, 0.08); }
+
+/* Portada de libro */
+.portada { position: relative; overflow: hidden; background: var(--color-papel2); }
+.portada img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.portada .lomo {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 7px;
+  background: linear-gradient(90deg, rgba(0, 0, 0, 0.32), rgba(0, 0, 0, 0.08));
+}
+.portada-sombra {
+  border-radius: 3px;
+  box-shadow: 3px 3px 0 rgba(59, 42, 32, 0.18);
+}
+
+/* Chip de nav */
+.nav-chip {
+  font-family: var(--font-data);
+  font-size: 0.74rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  padding: 0.32rem 0.7rem;
+  border-radius: 999px;
+  white-space: nowrap;
+  color: #d9c9a8;
+  transition: color 0.15s, background 0.15s;
+}
+.nav-chip:hover { color: #fffdf7; }
+.nav-chip.activa { background: var(--color-laton); color: #241a12; font-weight: 700; }
+
+/* Animacion de entrada */
+@keyframes subir {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.aparece { animation: subir 0.5s ease both; }
+
+::selection { background: rgba(176, 141, 87, 0.4); }
