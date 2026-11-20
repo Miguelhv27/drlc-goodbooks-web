@@ -24,22 +24,34 @@ export default function Curves() {
   const hist = summary.history;
   const azar = Math.log(summary.config.batch);
 
-  const { filas, mejores, gap } = useMemo(() => {
+  const { filas, mejores, gap, ndcgFilas } = useMemo(() => {
     const f: { epoca: number; modelo: string; conjunto: string; perdida: number }[] = [];
     for (const [k, h] of Object.entries(hist)) {
       h.loss.forEach((a, i) => f.push({ epoca: i + 1, modelo: TORRES[k], conjunto: "Entrenamiento", perdida: a }));
       h.val_loss.forEach((b, i) => f.push({ epoca: i + 1, modelo: TORRES[k], conjunto: "Validación", perdida: b }));
     }
     const mejor = Object.entries(hist).map(([k, h]) => {
-      const i = h.val_loss.indexOf(Math.min(...h.val_loss));
-      return { epoca: i + 1, perdida: h.val_loss[i], modelo: TORRES[k] };
+      const n = h.loss.length;
+      const b = Math.min(Math.max(h.best_epoch ?? h.val_loss.indexOf(Math.min(...h.val_loss)) + 1, 1), n);
+      return {
+        epoca: b,
+        perdida: h.val_loss[b - 1],
+        yNdcg: typeof h.val_ndcg?.[b - 1] === "number" ? (h.val_ndcg![b - 1] as number) : undefined,
+        modelo: TORRES[k],
+      };
     });
+    const nd: { epoca: number; modelo: string; ndcg: number }[] = [];
+    for (const [k, h] of Object.entries(hist)) {
+      h.val_ndcg?.forEach((v, i) => nd.push({ epoca: i + 1, modelo: TORRES[k], ndcg: v }));
+    }
     const g: { epoca: number; modelo: string; brecha: number }[] = [];
     for (const [k, h] of Object.entries(hist)) {
       h.loss.forEach((a, i) => g.push({ epoca: i + 1, modelo: TORRES[k], brecha: +(h.val_loss[i] - a).toFixed(4) }));
     }
-    return { filas: f, mejores: mejor, gap: g };
+    return { filas: f, mejores: mejor, gap: g, ndcgFilas: nd };
   }, [hist]);
+
+  const hayNdcg = ndcgFilas.length > 0;
 
   const epocas = Math.max(...Object.values(hist).map((h) => h.loss.length));
   const diag = useMemo(
@@ -48,7 +60,7 @@ export default function Curves() {
         const tr = h.loss;
         const va = h.val_loss;
         const n = va.length;
-        const best = va.indexOf(Math.min(...va)) + 1;
+        const best = h.best_epoch ?? h.val_loss.indexOf(Math.min(...h.val_loss)) + 1;
         let lectura: string;
         if (best < n && va[n - 1] - Math.min(...va) > 0.02) {
           lectura = `La validación empezó a empeorar después de la época ${best} mientras el entrenamiento seguía bajando: señal de sobreajuste. Esa señal es la que hoy corta el entrenamiento: el pipeline aplica early stopping sobre el NDCG@10 de validación y restaura los pesos de la mejor época, así que la curva termina cuando se agota la paciencia.`;
@@ -89,8 +101,10 @@ export default function Curves() {
           La <strong>pérdida</strong> mide qué tan “sorprendido” está el modelo al ver el libro que el usuario realmente
           leyó entre los {fInt(summary.config.batch)} candidatos del lote: <strong>menor es mejor</strong>. Un modelo que
           adivina al azar tendría una pérdida de ln({fInt(summary.config.batch)}) ≈ <strong>{fNum(azar, 2)}</strong> (línea
-          punteada). La línea continua es <strong>entrenamiento</strong> y la discontinua es <strong>validación</strong>{" "}
-          (interacciones más recientes que el modelo no usa para aprender).
+           punteada). La línea continua es <strong>entrenamiento</strong> y la discontinua es <strong>validación</strong>{" "}
+           (interacciones más recientes que el modelo no usa para aprender). Cada trazo y marca se detalla en la leyenda
+           bajo el gráfico; el gráfico siguiente muestra la métrica real de la tarea —NDCG@10 de validación— época por
+           época, que es la señal que decide qué modelo se publica.
         </>
       }
     >
@@ -103,10 +117,10 @@ export default function Curves() {
               <YAxis tick={tick} tickLine={{ stroke: "#8a5a3b" }} axisLine={{ stroke: "#8a5a3b" }} domain={["auto", "auto"]} tickFormatter={(v) => Number(v).toFixed(2)} label={{ value: "Pérdida", angle: -90, position: "insideLeft", fill: TINTA, fontSize: 12 }} />
               <Tooltip contentStyle={tooltipContenido} formatter={(v: number | string, name: string) => [fNum(Number(v)), name]} labelFormatter={(l) => `Época ${l}`} />
               <ReferenceLine y={azar} stroke={TINTA} strokeDasharray="4 5" label={{ value: `Azar: ln(${fInt(summary.config.batch)}) = ${fNum(azar, 2)}`, position: "right", fill: TINTA, fontSize: 11 }} />
-              <Line data={idata} dataKey="perdida" name={`${TORRES.dos_torres_id} · train`} stroke={BORDO} strokeWidth={2.5} dot={{ r: 3, fill: BORDO }} />
-              <Line data={vdata} dataKey="perdida" name={`${TORRES.dos_torres_id} · val`} stroke={BORDO} strokeWidth={2.5} strokeDasharray="7 5" dot={{ r: 3, fill: "#fff" }} />
-              <Line data={mdata} dataKey="perdida" name={`${TORRES.dos_torres_meta} · train`} stroke={VERDE} strokeWidth={2.5} dot={{ r: 3, fill: VERDE }} />
-              <Line data={nadata} dataKey="perdida" name={`${TORRES.dos_torres_meta} · val`} stroke={VERDE} strokeWidth={2.5} strokeDasharray="7 5" dot={{ r: 3, fill: "#fff" }} />
+              <Line data={idata} dataKey="perdida" name={`${TORRES.dos_torres_id} · entrenamiento`} stroke={BORDO} strokeWidth={2.5} dot={{ r: 3, fill: BORDO }} />
+              <Line data={vdata} dataKey="perdida" name={`${TORRES.dos_torres_id} · validación`} stroke={BORDO} strokeWidth={2.5} strokeDasharray="7 5" dot={{ r: 3, fill: "#fff" }} />
+              <Line data={mdata} dataKey="perdida" name={`${TORRES.dos_torres_meta} · entrenamiento`} stroke={VERDE} strokeWidth={2.5} dot={{ r: 3, fill: VERDE }} />
+              <Line data={nadata} dataKey="perdida" name={`${TORRES.dos_torres_meta} · validación`} stroke={VERDE} strokeWidth={2.5} strokeDasharray="7 5" dot={{ r: 3, fill: "#fff" }} />
               <Legend verticalAlign="top" wrapperStyle={leyendaTexto} />
               {mejores.map((p) => (
                 <ReferenceDot key={p.modelo} x={p.epoca} y={p.perdida} r={9} fill="none" stroke={LATON} strokeWidth={3} shape={Rombo} ifOverflow="extendDomain" />
@@ -114,10 +128,40 @@ export default function Curves() {
             </ComposedChart>
           </ResponsiveContainer>
         </div>
-        <p className="mt-2 text-[0.8rem] text-gris" style={{ fontFamily: leyendaTexto.fontFamily }}>
-          El rombo dorado marca la época con <strong>menor pérdida de validación</strong> de cada modelo.
-        </p>
+        <div className="mt-3 flex flex-wrap gap-x-5 gap-y-1 text-[0.8rem] text-gris" style={{ fontFamily: leyendaTexto.fontFamily }}>
+          <span><span className="font-semibold" style={{ color: TINTA }}>━</span> <strong>continua</strong>: pérdida en entrenamiento — la que el modelo optimiza en cada lote.</span>
+          <span><span className="font-semibold" style={{ color: TINTA }}>╌</span> <strong>discontinua</strong>: pérdida en validación — interacciones más recientes que el modelo nunca usó para aprender.</span>
+          <span><span className="font-semibold" style={{ color: TINTA }}>┄</span> <strong>punteada horizontal</strong>: pérdida del azar, ln({fInt(summary.config.batch)}) ≈ {fNum(azar, 2)} — el piso de un modelo sin señal.</span>
+          <span><span className="font-semibold" style={{ color: LATON }}>◆</span> <strong>rombo dorado</strong>: época cuyos pesos se publican — el pico del NDCG@10 de validación; después la corrida sigue un par de épocas y el early stopping la corta, pero esos pesos posteriores no se usan.</span>
+        </div>
       </div>
+
+      {hayNdcg && (
+        <div className="tarjeta p-4 mt-6">
+          <h3 className="titulo-h3 mb-2">NDCG@10 de validación por época (señal de selección)</h3>
+          <div style={{ height: 300 }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <ComposedChart margin={{ top: 8, right: 12, left: -8, bottom: 0 }}>
+                <CartesianGrid stroke={GRID} strokeDasharray="3 3" vertical={false} />
+                <XAxis dataKey="epoca" type="number" domain={[1, epocas]} ticks={Array.from({ length: epocas }, (_, i) => i + 1)} tick={tick} tickLine={{ stroke: "#8a5a3b" }} axisLine={{ stroke: "#8a5a3b" }} label={{ value: "Época", position: "insideBottom", offset: -2, fill: TINTA, fontSize: 12 }} />
+                <YAxis tick={tick} tickLine={{ stroke: "#8a5a3b" }} axisLine={{ stroke: "#8a5a3b" }} domain={["auto", "auto"]} tickFormatter={(v) => Number(v).toFixed(4)} label={{ value: "NDCG@10", angle: -90, position: "insideLeft", fill: TINTA, fontSize: 12 }} />
+                <Tooltip contentStyle={tooltipContenido} formatter={(v: number | string, name: string) => [fNum(Number(v), 4), name]} labelFormatter={(l) => `Época ${l}`} />
+                <Line data={ndcgFilas.filter((p) => p.modelo === TORRES.dos_torres_id)} dataKey="ndcg" name={`${TORRES.dos_torres_id} · NDCG@10 validación`} stroke={BORDO} strokeWidth={2.5} dot={{ r: 3, fill: BORDO }} />
+                <Line data={ndcgFilas.filter((p) => p.modelo === TORRES.dos_torres_meta)} dataKey="ndcg" name={`${TORRES.dos_torres_meta} · NDCG@10 validación`} stroke={VERDE} strokeWidth={2.5} dot={{ r: 3, fill: VERDE }} />
+                <Legend verticalAlign="top" wrapperStyle={leyendaTexto} />
+                <ReferenceLine x={epocas} stroke={LATON} strokeDasharray="2 4" label={{ value: "parada del entrenamiento", position: "right", fill: TINTA, fontSize: 11 }} />
+                {mejores.filter((p) => typeof p.yNdcg === "number").map((p) => (
+                  <ReferenceDot key={`nd-${p.modelo}`} x={p.epoca} y={p.yNdcg as number} r={9} fill="none" stroke={LATON} strokeWidth={3} shape={Rombo} ifOverflow="extendDomain" />
+                ))}
+              </ComposedChart>
+            </ResponsiveContainer>
+          </div>
+          <p className="mt-2 text-[0.8rem] text-gris" style={{ fontFamily: leyendaTexto.fontFamily }}>
+            Esta es la métrica que decide: el rombo marca el pico de cada torre y la línea vertical el punto de parada.
+            Los pesos de la época del pico son los que alimentan Resultados, Representaciones y Demo.
+          </p>
+        </div>
+      )}
 
       <TheoryCard>
         <p>
@@ -135,6 +179,12 @@ export default function Curves() {
           <strong>La métrica de entrenamiento es el promedio de la época</strong>, medida mientras el modelo todavía está
           cambiando en medio de ella; la de validación se mide al final, con el modelo ya actualizado. Esa asimetría hace
           que la brecha real sea un poco menor que la que se ve en el gráfico.
+        </p>
+        <p className="mt-2">
+          <strong>Y por eso la selección final no mira la pérdida:</strong> el early stopping elige la época por su
+          NDCG@10 de validación — la misma métrica de la tarea, en el gráfico de abajo — y publica exactamente esos
+          pesos. Que la curva de pérdida siga bajando o subiendo después de la época publicada es información útil para
+          el diagnóstico, pero no para el ranking que ves en Resultados.
         </p>
       </TheoryCard>
 
