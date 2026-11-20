@@ -73,7 +73,7 @@ web/
 │   ├── lib/            # tipos, store de datos, paleta/heredada de app.py, textos
 │   ├── components/     # BookCover, Carousel, FlowDiagram, TheoryCard, Math, Metric…
 │   └── sections/       # Hero, Dataset, Pipeline, Architecture, Curves,
-│                       # Results, Representations, Demo, Challenges
+│                       # Results, Representations, Demo, Dificultades
 └── tools/
     ├── gen_data.py     # hornea public/data desde el pipeline
     └── smoke.mjs       # verificación de renderizado headless
@@ -87,3 +87,16 @@ web/
   que el conteo de aciertos por usuario **subestima** el Recall real.
 - Los valores absolutos de NDCG@k son bajos *por diseño* (catálogo de 10.000 ítems,
   split cronológico, verdades ocultas): lo que se publica es la comparación entre modelos.
+- La novena sección del menú, **Dificultades** (`#dificultades`), cubre los problemas
+  encontrados durante el proyecto (binarización de ratings ≥ 4, sesgo de los negativos
+  in-batch y su corrección logQ, género como proxy ruidoso, primeras corridas con split
+  aleatorio que inflaban las métricas, límites del dataset), las limitaciones actuales
+  (la tabla principal reporta la corrida canónica de una sola semilla; la varianza
+  multi-semilla se está agregando y, cuando los artefactos la expongan, el sitio la
+  muestra como `media ± desvío`) y los
+  próximos pasos (reentreno con todos los usuarios, init preentrenado item2vec/NCF,
+  métricas por categoría, análisis de fairness de popularidad).
+- Regla de procedencia de números en la prosa: cada cifra del sitio o sale de un campo
+  de `summary.json` (renderizada con formato) o está etiquetada explícitamente como
+  *observación anecdótica de corridas intermedias, sin artefacto asociado* (así aparece
+  la anécdota de logQ "0,04 → 0,049" en Dificultades).

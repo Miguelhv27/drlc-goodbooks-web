@@ -17,7 +17,7 @@ import BookCover from "../components/BookCover";
 import TheoryCard from "../components/TheoryCard";
 import Metric from "../components/Metric";
 import { loadPca, useStore, type PcaPointLite } from "../lib/store";
-import { COLOR_MODELO, COLOR_TORRE, colorGenero, fNum } from "../lib/paleta";
+import { COLOR_MODELO, COLOR_TORRE, colorGenero, fInt, fNum } from "../lib/paleta";
 import { GRID, TINTA, leyendaTexto, tooltipContenido } from "../lib/chartTheme";
 
 type Modelo = "dos_torres_id" | "dos_torres_meta";
@@ -182,7 +182,7 @@ export default function Representations() {
         <h3 className="titulo-h3 mb-1">Vecinos más cercanos de un libro</h3>
         <p className="mb-4 text-[0.85rem] text-gris">
           Cada tarjeta compara los 10 libros más parecidos <strong>antes</strong> y <strong>después</strong> de entrenar,
-          sobre el top 500 del catálogo por número de valoraciones.
+          sobre el top {fInt(neighbors.pool.length)} del catálogo por número de valoraciones.
         </p>
         {!pts ? (
           <div className="tarjeta p-6 text-[0.85rem] text-gris">Calculando vecinos…</div>
@@ -197,7 +197,20 @@ export default function Representations() {
 
       <TheoryCard>
         <p className="mb-2">
-          <strong>¿Qué es PCA aquí?</strong> Los vectores viven en 64 dimensiones. PCA es una transformación lineal que
+          <strong>¿De dónde sale la representación “inicial”?</strong> Las dos torres arrancan con la inicialización
+          aleatoria por defecto de Keras para las capas de embedding: una distribución uniforme aproximada en [−0.05,
+          0.05] por dimensión. No hay nada preentrenado detrás: el punto de partida es ruido puro y todo lo que
+          organiza el espacio proviene del entrenamiento con este dataset. Elegimos{" "}
+          <strong>entrenar desde cero</strong> y no partir de embeddings preentrenados (item2vec sobre co-ocurrencias,
+          word2vec sobre texto, inicializaciones tipo NCF) por tres razones: el dataset es mediano y sin corpus de
+          texto real del cual transferir —solo tags—; un init preentrenado llegaría con estructura ya formada y
+          <em> ocultaría</em> justamente lo que el curso pide observar, es decir, <strong>la transformación</strong> de
+          la representación durante el entrenamiento; y así el “antes vs. después” es atribuible por completo a
+          nuestro pipeline. Usar embeddings preentrenados como init es una alternativa legítima que queda registrada
+          como próximo paso en <a href="#dificultades" className="font-semibold text-bordo underline decoration-laton">Dificultades</a>.
+        </p>
+        <p className="mt-2 mb-2">
+          <strong>¿Qué es PCA aquí?</strong> Los vectores viven en {summary.config.dim} dimensiones. PCA es una transformación lineal que
           busca las 2 direcciones donde los datos varían más y proyecta todo sobre ellas: una “sombra” de 2D que
           conserva lo esencial de la estructura. Que dos libros se toquen en la sombra no prueba que sean idénticos,
           pero que se separen sí es evidencia de organización.

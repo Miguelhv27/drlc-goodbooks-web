@@ -8,7 +8,7 @@ import TheoryCard from "../components/TheoryCard";
 
 export default function Hero() {
   const { summary, popular } = useStore();
-  const { eda, metrics, run } = summary;
+  const { config, eda, metrics, run } = summary;
   const best = run.model_order.reduce((a, b) => (metrics[a]["ndcg@10"] >= metrics[b]["ndcg@10"] ? a : b));
 
   return (
@@ -22,7 +22,7 @@ export default function Hero() {
             Recomendador de libros con <span className="text-bordo">Deep Representation Learning</span>
           </h1>
           <p className="mt-4 max-w-2xl text-[1.05rem] leading-relaxed text-tinta/90">
-            Dado un lector, ordenar los 10.000 libros que aún no leyó según qué tan relevantes son para él. El modelo
+            Dado un lector, ordenar los {fInt(eda.n_books)} libros que aún no leyó según qué tan relevantes son para él. El modelo
             principal es una <strong>arquitectura de dos torres</strong>: una red aprende un vector por usuario, otra un
             vector por libro, y se recomienda cuando apuntan en la misma dirección. Lo que nos interesa del curso:
             analizar <strong>cómo cambian esas representaciones</strong> antes y después de entrenar.
@@ -69,15 +69,17 @@ export default function Hero() {
         <TheoryCard>
           <p>
             Imagina una biblioteca donde cada libro y cada lector se convierten en una <strong>dirección</strong> (una
-            flecha en un espacio de 64 dimensiones). Entrenar consiste en mover esas flechas: si a un lector le gustó un
-            libro, sus flechas deben apuntar más parecido. “Recomendar” es simplemente mirar qué flechas de libros están
-            más alineadas con la del lector. Que 64 números representen “el gusto” de alguien suena mágico, pero eso es
-            exactamente lo que aprende una red neuronal a partir de 1,16 millones de lecturas positivas.
+            flecha en un espacio de {config.dim} dimensiones). Entrenar consiste en mover esas flechas: si a un lector
+            le gustó un libro, sus flechas deben apuntar más parecido. “Recomendar” es simplemente mirar qué flechas de
+            libros están más alineadas con la del lector. Que {config.dim} números representen “el gusto” de alguien
+            suena mágico, pero eso es exactamente lo que aprende una red neuronal a partir de{" "}
+            {fInt(eda.n_pos_used)} lecturas positivas (rating ≥ {eda.threshold}) en el subconjunto de entrenamiento.
           </p>
           <p className="mt-2">
-            La <strong>dispersidad</strong> del 98,9% significa que casi nadie ha leído casi nada: de todas las
-            combinaciones posibles lector-libro, solo el 1,1% tiene una nota. Justamente por eso un modelo de
-            representaciones tiene sentido — las tablas de “quién leyó qué” a secas no alcanzan.          </p>
+            La <strong>dispersidad</strong> del {fPct(eda.sparsity, 1)} significa que casi nadie ha leído casi nada: de
+            todas las combinaciones posibles lector-libro, solo el {fPct(1 - eda.sparsity, 1)} tiene una nota.
+            Justamente por eso un modelo de representaciones tiene sentido — las tablas de “quién leyó qué” a secas no
+            alcanzan.          </p>
           <p className="mt-2">
             El NDCG@10 (que verás en Resultados) mide qué tan arriba de una lista de 10 recomendaciones aparecen los
             libros que de verdad leerías. Son números bajos para cualquier sistema de recuperación — importa más la
