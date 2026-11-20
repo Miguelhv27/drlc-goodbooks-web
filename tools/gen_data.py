@@ -1,7 +1,8 @@
 """gen_data.py — Extrae del pipeline de DRLC los datos que consume el sitio React.
 
 Corrida con la MISMA semilla y configuracion que `pipeline.py` (seed=42, dim=64,
-batch=2048, tau=0.05, logq=1, epochs=5, max_users=15000), asi que los numeros del
+batch=2048, tau=0.05, logq=1, epochs=maximo 10 con early stopping patience 2,
+max_users=15000), asi que los numeros del
 sitio son los mismos de `artifacts/results.json`, no una reimplementacion.
 
 Salidas (web/public/data/):
@@ -124,7 +125,8 @@ def build_extended_demo(a, cfg):
     hist = {}
     for name, feats in (("dos_torres_id", None), ("dos_torres_meta", Td)):
         log(f"entrenando {name} ...")
-        U, U0, E0, E1, h = pipeline.train_two_tower(name, n_users, n_items, pairs, vpairs, args, feats)
+        U, U0, E0, E1, h = pipeline.train_two_tower(name, n_users, n_items, pairs, vpairs, args, feats,
+                                                    train=train, val=val, eval_users=eval_users)
         embs[name] = (U, E0, E1)
         hist[name] = h
         scorers[name] = (lambda U_, E_: (lambda u: U_[u] @ E_.T))(U, E1)
@@ -213,12 +215,16 @@ def write_summary(a, res, out_dir: Path) -> None:
             "ks": ks_present,
             "generated_from": "goodbooks-recommender/artifacts (seed 42)",
         },
-        "config": {k: cfg.get(k) for k in ["thr", "min_pos", "max_users", "eval_users", "dim", "epochs", "batch", "tau", "logq", "seed", "seeds", "tf_version"]},
+        "config": {k: cfg.get(k) for k in ["thr", "min_pos", "max_users", "eval_users", "dim", "epochs", "patience", "batch", "tau", "logq", "seed", "seeds", "tf_version"]},
         "eda": eda,
         "metrics": {m: {k: round(float(v), 6) for k, v in met[m].items()} for m in met},
         "repr": repr_scalar,
+        # history: loss/val_loss siempre; val_ndcg/best_epoch son los keys del
+        # early stopping (T6/S10), aditivos para artefactos antiguos sin ES.
         "history": {m: {"loss": [round(float(x), 6) for x in hist[m]["loss"]],
-                        "val_loss": [round(float(x), 6) for x in hist[m]["val_loss"]]} for m in hist},
+                        "val_loss": [round(float(x), 6) for x in hist[m]["val_loss"]],
+                        "val_ndcg": [round(float(x), 6) for x in hist[m].get("val_ndcg", [])],
+                        "best_epoch": int(hist[m].get("best_epoch", 0))} for m in hist},
         "arch": arch,
         # --- rubric-alignment T1 (S1/S2/S4/S5): campos nuevos, aditivos ---
         "bridge": bridge,

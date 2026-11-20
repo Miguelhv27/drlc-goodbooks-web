@@ -22,8 +22,10 @@ Integrantes: Miguel Ángel Hernández Vargas · Juan Sebastián Fajardo Acevedo
 
 `public/data/*.json` son artefactos **hornados**, generados con `tools/gen_data.py`, que
 corre el pipeline original (`goodbooks-recommender/pipeline.py`) con la **misma semilla 42**
-y los mismos hiperparámetros de `results.json` (dim 64, batch 2048, τ 0.05, logQ, 5 épocas,
-15.000 usuarios). El script valida antes de escribir que el NDCG@10 reentrenado coincida
+y los mismos hiperparámetros de `results.json` (dim 64, batch 2048, τ 0.05, logQ, máximo
+10 épocas con early stopping sobre NDCG@10 de validación —paciencia 2, la curva real se
+detuvo en la época 6—, 15.000 usuarios). El script valida antes de escribir que el
+NDCG@10 reentrenado coincida
 con `results.json` (tolerancia 5e-3) — si no casa, aborta. Por eso cada número del sitio es
 el mismo del entregable.
 
@@ -50,6 +52,7 @@ tiempo de render, sin valores hardcoded:
 | `user_repr` | por torre, estadísticas `init`/`final` del espacio de usuario (n, dim, muestra, normas, coseno medio muestral) y ejemplos `knn` (usuario → 5 vecinos con sus ítems positivos) | **Representaciones** — subsection "Embeddings de usuarios" (S4) |
 | `seed_runs` | 3 corridas completas (semillas `config.seeds` = 42, 7, 2024): métricas de los 5 modelos y `val_loss` de las torres | **Resultados** — bloque "Media ± desvío entre 3 semillas" (calculado al render, S2); **Dificultades** — limitación 1; **Pipeline** — chip de semillas |
 | `tf_version` | versión de TensorFlow que produjo los artefactos (también en `config.tf_version`) | **Pipeline** — chip "TensorFlow {tf_version}" |
+| `history.*.val_ndcg` + `history.*.best_epoch` y `config.patience` (fase model-tuning) | curva de NDCG@10 de validación por época (positivos = val, se enmascara solo train) y época cuyos pesos se restauran al parar; `patience` del early stopping | **Curvas** — la historia ya viene truncada en la época de parada (diagnóstico honesto del nuevo stopping); el resto es trazabilidad de datos |
 
 La tabla principal de Resultados y toda la demo siguen usando la **corrida canónica
 (semilla 42)**; `seed_runs` solo aporta la media ± desvío del bloque de varianza.

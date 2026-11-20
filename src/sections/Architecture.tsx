@@ -241,7 +241,7 @@ export default function Architecture() {
             ["Lote", fInt(cfg.batch)],
             ["Temperatura τ", String(cfg.tau)],
             ["Optimizador", "Adam · lr 1e-3"],
-            ["Épocas", String(cfg.epochs)],
+            ["Épocas (máx.)", String(cfg.epochs)],
             ["logQ", cfg.logq ? "Sí" : "No"],
             ["Semilla", String(cfg.seed)],
           ].map(([k, v]) => (

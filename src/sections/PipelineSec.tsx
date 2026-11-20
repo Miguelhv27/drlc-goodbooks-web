@@ -32,7 +32,7 @@ const CONFIG_KEYS: { k: string; label: string; fmt?: (v: unknown) => string }[] 
   { k: "max_users", label: "Subconjunto de usuarios" },
   { k: "eval_users", label: "Usuarios evaluados" },
   { k: "dim", label: "Dimensión del embedding" },
-  { k: "epochs", label: "Épocas" },
+  { k: "epochs", label: "Épocas (máx.)" },
   { k: "batch", label: "Tamaño de lote" },
   { k: "tau", label: "Temperatura τ", fmt: (v) => fNum(Number(v), 2) },
   { k: "logq", label: "Corrección logQ", fmt: (v) => (Number(v) ? "Sí (activada)" : "No") },

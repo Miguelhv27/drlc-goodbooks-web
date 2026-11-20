@@ -86,6 +86,21 @@ export default function Dificultades() {
           </p>
         </Bloque>
 
+        <Bloque titulo="El sobreajuste no se arregló con regularizaciones, sino parando a tiempo" color={COLORES.laton}>
+          <p>
+            Vimos que la pérdida de validación volvía a subir tras pocas épocas: señal de
+            sobreajuste. Antes de tocar el pipeline exploramos las técnicas estándar de
+            regularización —dropout en las torres, mezcla de negativos uniformes extra,
+            temperaturas τ mayores, weight decay y, en item-kNN, vecindarios top-k con
+            shrinkage— con un harness dedicado (evidencia: <span className="datos">tools/experimentos_results.json</span>{" "}
+            en el repo del pipeline). <strong>Todas empeoraron el NDCG@10 de validación</strong>,
+            así que se descartaron y el baseline quedó tal cual. El único ajuste que mejoró
+            validación fue el <strong>early stopping</strong> sobre ese mismo NDCG@10 (hasta{" "}
+            {fInt(cfg.epochs)} épocas como máximo, con restauración de los pesos de la mejor
+            época), que hoy es el comportamiento por defecto del pipeline.
+          </p>
+        </Bloque>
+
         <Bloque titulo="Límites del propio dataset" color={COLORES.azul}>
           <p>
             Goodbooks-10k aporta valoraciones y tags, no reseñas ni texto real: la única señal de contenido son los
