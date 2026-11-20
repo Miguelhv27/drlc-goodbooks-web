@@ -101,7 +101,7 @@ export default function Curves() {
         <>
           La <strong>pérdida</strong> mide qué tan “sorprendido” está el modelo al ver el libro que el usuario realmente
           leyó entre los {fInt(summary.config.batch)} candidatos del lote: <strong>menor es mejor</strong>. El eje está
-          normalizado de <strong>0 a 100 %</strong>: el techo (100 %) es la sorpresa de un modelo que adivina al azar —
+          normalizado como <strong>porcentaje del azar</strong> (el eje muestra la ventana 60–100 %, donde viven todas las curvas): el techo (100 %) es la sorpresa de un modelo que adivina al azar —
           ln({fInt(summary.config.batch)}) ≈ {fNum(azar, 2)} en crudos—, así que un punto al 85 % conserva el 85 % de
           esa sorpresa. La línea continua es <strong>entrenamiento</strong> y la discontinua es <strong>validación</strong>{" "}
           (interacciones más recientes que el modelo no usa para aprender). Cada trazo y marca se detalla en la leyenda
@@ -116,7 +116,7 @@ export default function Curves() {
             <ComposedChart margin={{ top: 8, right: 24, left: 4, bottom: 20 }}>
               <CartesianGrid stroke={GRID} strokeDasharray="3 3" />
               <XAxis dataKey="epoca" type="number" domain={[1, epocas]} ticks={Array.from({ length: epocas }, (_, i) => i + 1)} tick={tick} tickLine={{ stroke: "#8a5a3b" }} axisLine={{ stroke: "#8a5a3b" }} label={{ value: "Época", position: "insideBottom", offset: 6, fill: TINTA, fontSize: 12 }} />
-              <YAxis width={56} tick={tick} tickLine={{ stroke: "#8a5a3b" }} axisLine={{ stroke: "#8a5a3b" }} domain={[0, 100]} ticks={[0, 20, 40, 60, 80, 100]} tickFormatter={(v) => `${fNum(Number(v), 0)} %`} label={{ value: "Pérdida (% del azar)", angle: -90, position: "insideLeft", offset: 6, fill: TINTA, fontSize: 12 }} />
+              <YAxis width={56} tick={tick} tickLine={{ stroke: "#8a5a3b" }} axisLine={{ stroke: "#8a5a3b" }} domain={[60, 100]} ticks={[60, 70, 80, 90, 100]} tickFormatter={(v) => `${fNum(Number(v), 0)} %`} label={{ value: "Pérdida (% del azar)", angle: -90, position: "insideLeft", offset: 6, fill: TINTA, fontSize: 12 }} />
               <Tooltip contentStyle={tooltipContenido} formatter={(v: number | string, name: string) => [`${fNum(Number(v), 1)} %`, name]} labelFormatter={(l) => `Época ${l}`} />
               <Line data={idata} dataKey="pct" name={`${TORRES.dos_torres_id} · entrenamiento`} stroke={BORDO} strokeWidth={2.5} dot={{ r: 3, fill: BORDO }} />
               <Line data={vdata} dataKey="pct" name={`${TORRES.dos_torres_id} · validación`} stroke={BORDO} strokeWidth={2.5} strokeDasharray="7 5" dot={{ r: 3, fill: "#fff" }} />
@@ -132,7 +132,7 @@ export default function Curves() {
         <div className="mt-3 flex flex-wrap gap-x-5 gap-y-1 text-[0.8rem] text-gris" style={{ fontFamily: leyendaTexto.fontFamily }}>
           <span><span className="font-semibold" style={{ color: TINTA }}>━</span> <strong>continua</strong>: pérdida en entrenamiento — la que el modelo optimiza en cada lote.</span>
           <span><span className="font-semibold" style={{ color: TINTA }}>╌</span> <strong>discontinua</strong>: pérdida en validación — interacciones más recientes que el modelo nunca usó para aprender.</span>
-          <span><span className="font-semibold" style={{ color: TINTA }}>%</span> <strong>escala 0–100 %</strong>: el techo (100 %) es la pérdida del azar, ln({fInt(summary.config.batch)}) ≈ {fNum(azar, 2)} en crudos; cada punto dice qué fracción de esa sorpresa conserva el modelo. Menor es mejor.</span>
+          <span><span className="font-semibold" style={{ color: TINTA }}>%</span> <strong>escala relativa al azar</strong>: el techo del eje (100 %) es la pérdida del azar, ln({fInt(summary.config.batch)}) ≈ {fNum(azar, 2)} en crudos; el eje arranca en 60 % para ampliar la zona donde viven las curvas — ningún punto queda por debajo. Menor es mejor.</span>
           <span><span className="font-semibold" style={{ color: LATON }}>◆</span> <strong>rombo dorado</strong>: época cuyos pesos se publican — el pico del NDCG@10 de validación; después la corrida sigue un par de épocas y el early stopping la corta, pero esos pesos posteriores no se usan.</span>
         </div>
       </div>
