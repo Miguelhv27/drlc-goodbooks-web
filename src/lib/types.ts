@@ -46,7 +46,7 @@ export interface Eda {
 
 export type Metrics = Record<string, Record<string, number>>;
 export type Rep = Record<string, Record<string, number>>;
-export type History = Record<string, { loss: number[]; val_loss: number[] }>;
+export type History = Record<string, { loss: number[]; val_loss: number[]; val_ndcg?: number[]; best_epoch?: number }>;
 
 export interface ArchRow {
   capa: string;
