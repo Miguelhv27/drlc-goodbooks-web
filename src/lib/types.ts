@@ -159,6 +159,22 @@ export interface DemoUser {
   recs: Record<string, number[]>;
 }
 
+/** Metadata de seleccion horneada en demo.json (fase model-tuning, T8/L11).
+ *  selection_rule documenta como se eligieron los usuarios de demo (cuantiles
+ *  deterministas de n_test sobre la muestra de evaluacion, nunca por hits);
+ *  n_test_min/n_test_max dan el spread de positivos de test de esa seleccion. */
+export interface DemoMeta {
+  selection_rule: string;
+  n_test_min: number;
+  n_test_max: number;
+}
+
+/** demo.json horneado desde T8: objeto con metadata + usuarios. Los artefactos
+ *  antiguos eran una lista cruda de DemoUser; readDemoFile() normaliza ambas. */
+export interface DemoFile extends DemoMeta {
+  users: DemoUser[];
+}
+
 export interface PopularItem {
   i: number;
   rc: number;

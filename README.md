@@ -35,7 +35,7 @@ el mismo del entregable.
 | `books.json` | 10.000 libros: título, autores, género proxy, ratings, año, ISBN-13 |
 | `pca_<modelo>_<init\|final>.json` | puntos PCA (2D) de las representaciones de libro, muestras de 2.500 por etapa |
 | `neighbors.json` | 10 vecinos más cercanos (coseno) para el top-500 del catálogo, inicial y final |
-| `demo.json` | 30 usuarios de ejemplo: train, test escondido y top-12 de los 5 modelos (precomputado, mismo pipeline) |
+| `demo.json` | `{ selection_rule, n_test_min, n_test_max, users }`: 30 usuarios de ejemplo elegidos por la regla estratificada documentada abajo; cada usuario trae train, test escondido y top-12 de los 5 modelos (precomputado, mismo pipeline). La estructura por usuario (`u`, `liked`, `held_out`, `n_test`, `recs`) es retro-compatible |
 | `popular.json` | top 60 libros por valoraciones (carruseles) |
 | `genres.json` | conteos de género proxy |
 
@@ -57,6 +57,33 @@ tiempo de render, sin valores hardcoded:
 La tabla principal de Resultados y toda la demo siguen usando la **corrida canónica
 (semilla 42)**; `seed_runs` solo aporta la media ± desvío del bloque de varianza.
 
+### Regla de selección de la demo y barra agrupada (`demo.json`)
+
+Con Recall@10 ≈ 0,03 son esperables <1 aciertos por top-10 y usuario, así que una
+muestra aleatoria de 30 perfiles casi siempre sale "sin hits" sin que eso diga nada
+del modelo. Desde la fase model-tuning (T8/L11) la demo se elige con una regla
+**determinista y estratificada** (implementada en `tools/gen_data.py`, documentada en
+su docstring):
+
+1. Se toma la misma muestra de usuarios de evaluación del pipeline (semilla 42,
+   `eval_users` = 3.000).
+2. Se ordenan por (nº de positivos held-out de test, id de usuario).
+3. Se toman 30 posiciones equiespaciadas (cuantiles) de esa lista ordenada. Sin RNG
+   sobre los aciertos y **sin filtrar por aciertos**: ningún usuario es "especial".
+
+Esquema de `demo.json`: `selection_rule` (texto de la regla:
+`"cuartiles de n_test sobre la muestra de evaluacion"`), `n_test_min` / `n_test_max`
+(spread de positivos test de los 30 elegidos) y `users` (lista de perfiles, estructura
+retro-compatible). Sin `--retrain`, el artefacto antiguo del pipeline se envuelve en el
+mismo esquema con `selection_rule` marcado como muestra anterior sin estratificar.
+
+La sección **Demo** deriva además, en tiempo de render y solo desde `demo.json` +
+`summary.json`, una **barra agrupada** sobre el selector de usuario: por modelo, media
+de aciertos top-10 por usuario y % de los 30 con ≥1 acierto, más la línea de contexto
+"esperado ≈ Recall@10 global × 10" para las dos torres y la regla de selección
+horneada en el artefacto. El párrafo honesto explica por qué 0–1 aciertos es el régimen
+normal de la tarea; la salvedad de subestimación por truncamiento del test se mantiene.
+
 Para regenerar todo (necesita el repo `goodbooks-recommender` al lado, con `data/` y TensorFlow):
 
 ```bash
@@ -64,7 +91,9 @@ cd web
 python tools/gen_data.py --retrain --demo-users 30
 ```
 
-Sin `--retrain` reusa `artifacts/` existentes (más rápido, la demo queda con los 5 usuarios originales).
+Sin `--retrain` reusa `artifacts/` existentes (más rápido; la demo queda con los
+usuarios del artefacto antiguo, envueltos en el mismo esquema con `selection_rule` de
+muestra anterior sin estratificar).
 
 ## Desarrollo local
 
