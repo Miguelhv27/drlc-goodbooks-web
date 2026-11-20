@@ -5,7 +5,8 @@ import Carousel from "../components/Carousel";
 import BookCover from "../components/BookCover";
 import TheoryCard from "../components/TheoryCard";
 import { useStore } from "../lib/store";
-import { COLOR_MODELO, fInt, fNum } from "../lib/paleta";
+import { readDemoFile, demoAggregates } from "../lib/demo";
+import { COLOR_MODELO, fInt, fNum, fPct } from "../lib/paleta";
 
 const KS = [5, 10, 12] as const;
 
@@ -16,7 +17,17 @@ export default function Demo() {
   const [ui, setUi] = useState(0);
   const [k, setK] = useState<(typeof KS)[number]>(10);
 
-  const u = demo[ui];
+  // demo.json se hornea hoy como { selection_rule, n_test_min, n_test_max, users };
+  // readDemoFile tolera tambien la lista antigua. Ver helper en lib/demo.ts.
+  const { users: demoUsers, meta: demoMeta } = readDemoFile(demo);
+  const agg = useMemo(() => demoAggregates(demoUsers, modelos, 10), [demoUsers, modelos]);
+  const torres = ["dos_torres_id", "dos_torres_meta"].filter((m) => summary.metrics[m]?.["recall@10"] != null);
+  const esperado = (m: string) => (summary.metrics[m]?.["recall@10"] ?? 0) * 10;
+  const esperadoTorres = torres.map(esperado);
+  const eMin = esperadoTorres.length ? Math.min(...esperadoTorres) : 0;
+  const eMax = esperadoTorres.length ? Math.max(...esperadoTorres) : 0;
+
+  const u = demoUsers[ui];
   const hid = useMemo(() => new Set(u.held_out), [u]);
   const aciertos = useMemo(() => {
     const o: Record<string, number> = {};
@@ -32,13 +43,55 @@ export default function Demo() {
       title="Demo: recomendaciones para usuarios reales"
       lead={
         <>
-          Selecciona un lector del subconjunto evaluado y compara qué recomienda cada modelo. Verde{" "}
+          Selecciona un lector de la muestra estratificada de {fInt(demoUsers.length)} usuarios evaluados y compara qué
+          recomienda cada modelo. Verde{" "}
           <strong>[acierto]</strong> = el modelo colocó ahí un libro escondido del test. Estos resultados están{" "}
           <strong>precomputados</strong> con el pipeline original (semilla {summary.config.seed}), no se calculan en el
           navegador.
         </>
       }
     >
+      <div className="ficha ficha-laton mb-6 min-w-0 p-4">
+        <h4 className="font-titulo mb-1 text-[0.9rem] font-bold text-nogal">
+          Agrupado en los {fInt(demoUsers.length)} usuarios (seleccion estratificada por nº de positivos test)
+        </h4>
+        <p className="mb-3 text-[0.78rem] leading-relaxed text-gris">
+          Media de aciertos por usuario en el top-10 y porcentaje con al menos un acierto, sobre los{" "}
+          {fInt(demoUsers.length)} perfiles.
+          {demoMeta && (
+            <>
+              {" "}Estos {fInt(demoUsers.length)} usuarios no son los que más aciertan: se eligieron de forma
+              determinista por cuartiles de n_test sobre la muestra de evaluación (regla horneada en el artefacto:{" "}
+              <span className="datos">{demoMeta.selection_rule}</span>; n_test de {demoMeta.n_test_min} a{" "}
+              {demoMeta.n_test_max}).
+            </>
+          )}
+        </p>
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+          {modelos.map((mo) => (
+            <div key={mo} className="min-w-0 rounded-md bg-white/50 px-3 py-2" style={{ borderLeft: `3px solid ${COLOR_MODELO[mo]}` }}>
+              <div className="mb-1 truncate text-[0.74rem] font-semibold text-nogal" title={names[mo]}>
+                {names[mo]}
+              </div>
+              <div className="datos text-[0.95rem] font-bold" style={{ color: COLOR_MODELO[mo] }}>
+                {fNum(agg[mo].meanHits, 2)} <span className="text-[0.68rem] font-normal text-gris">aciertos/10 de media</span>
+              </div>
+              <div className="datos text-[0.78rem] text-gris">{fPct(agg[mo].fracUsers, 1)} con ≥1 acierto</div>
+            </div>
+          ))}
+        </div>
+        <p className="mt-3 text-[0.76rem] leading-relaxed text-gris">
+          Contexto esperado por usuario y top-10 = Recall@10 global × 10 (derivado de la tabla de métricas):{" "}
+          {torres.map((m, i) => (
+            <span key={m}>
+              {i > 0 ? " · " : ""}
+              {names[m]}: {fNum(esperado(m), 2)}
+            </span>
+          ))}
+          . Compare la barra de arriba con estos valores: si andan en la misma vecindad, la demo está siendo honesta.
+        </p>
+      </div>
+
       <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
         <label className="flex items-center gap-3">
           <span className="text-[0.85rem] font-semibold text-nogal">Usuario de ejemplo</span>
@@ -47,7 +100,7 @@ export default function Demo() {
             onChange={(e) => setUi(Number(e.target.value))}
             className="selector datos"
           >
-            {demo.map((d, i) => (
+            {demoUsers.map((d, i) => (
               <option key={d.u} value={i}>
                 Usuario {i + 1} · interno #{d.u} · {d.held_out.length} libros escondidos en muestra ({fInt(d.n_test)} en total)
               </option>
@@ -162,6 +215,17 @@ export default function Demo() {
             con el que nadie te asoció explícitamente, ese libro aparece arriba. Un acierto no es memoria: es
             generalización.
           </p>
+          {torres.length > 0 && (
+            <p className="mt-2">
+              <strong>Por qué casi siempre verás 0 o 1 aciertos por usuario:</strong> es el régimen esperable de la
+              tarea, no un fallo de la demo. Cada modelo ordena {fInt(summary.eda.n_books)} candidatos y el Recall@10
+              global de las dos torres es {torres.map((m, i) => (
+                <span key={m}>{i > 0 ? " y " : ""}{fNum(summary.metrics[m]?.["recall@10"] ?? 0, 3)} ({names[m]})</span>
+              ))}, lo que implica ≈{fNum(eMin, 2)}–{fNum(eMax, 2)} aciertos por top-10 y usuario: el cero es el
+              resultado más común. La forma honesta de leer la demo es la barra agrupada de arriba, no un perfil
+              particular; ningún usuario de la lista fue elegido por acertar ni es “especial”.
+            </p>
+          )}
           <p className="mt-2">
             <strong>Limitación honesta:</strong> la lista de escondidos mostrada aquí está truncada (se guardan solo los
             primeros del test). Un acierto puede no aparecer marcado si el libro escondido quedó fuera de esa ventana, y

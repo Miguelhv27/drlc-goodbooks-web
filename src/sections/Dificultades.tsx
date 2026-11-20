@@ -143,8 +143,14 @@ export default function Dificultades() {
         <ul className="list-disc space-y-2 pl-5 text-[0.92rem] leading-relaxed">
           <li>
             <strong>Reentrenar con los {fInt(eda.n_users)} usuarios completos</strong> (
-            <span className="datos">--max_users 0</span>): más señal para las torres y menos ruido por submuestreo.
-            Riesgo a vigilar: que el costo de entrenamiento y la popularidad del subconjunto cambien el ranking.
+            <span className="datos">--max_users 0</span>): más señal para las torres y menos ruido por submuestreo; el
+            riesgo por vigilar es que el costo de entrenamiento y la popularidad del subconjunto cambien el ranking.
+            Esa escala ya se experimentó (evidencia: <span className="datos">tools/experimentos2_results.json</span> en
+            el repo del pipeline): con los 53k usuarios completos y con dim 128 las torres mejoran y acortan la
+            distancia frente a item-kNN, pero el baseline de vecindario clásico sigue al frente en validación, y como
+            la ganancia de dim 128 fue solo en la torre de ID y falló el control de la torre con metadatos, la
+            configuración publicada quedó en dim 64 con early stopping; escalar sigue siendo una opción abierta si se
+            submuestrean los embeddings.
           </li>
           <li>
             <strong>Inicialización preentrenada de los embeddings de ID</strong>: item2vec sobre las co-ocurrencias o

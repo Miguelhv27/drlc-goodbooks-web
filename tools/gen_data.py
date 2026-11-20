@@ -11,8 +11,24 @@ Salidas (web/public/data/):
   genres.json   conteo de generos (proxy desde tags)
   pca_<model>_<stage>.json  puntos PCA del scatter inicial vs final
   neighbors.json  10 vecinos mas cercanos por libro (top 500 por ratings)
-  demo.json     usuarios de ejemplo con train/test/refs por modelo (ampliada)
+  demo.json     {selection_rule, n_test_min, n_test_max, users}: 30 usuarios de
+                ejemplo con train/test/refs por modelo. Estructura por usuario
+                retro-compatibel (u, liked, held_out, n_test, recs).
   popular.json  top libros por numero de valoraciones (carrusel)
+
+Regla de seleccion de la demo (T8/L11, deterministica):
+  Los 30 usuarios de demo NO se eligen al azar ni por cuantos aciertos tienen
+  (eso seria cherry-picking). Se toma la misma muestra de usuarios de
+  evaluacion del pipeline (seed 42, eval_users) y se ordenan por
+  (n_test, id_de_usuario), donde n_test es el numero de positivos held-out de
+  test de cada usuario. Sobre esa lista ordenada se toman 30 posiciones
+  equiespaciadas (cuantiles: posicion i = round(i*(N-1)/(30-1)), aritmetica
+  entera exacta, sin RNG y sin filtrar por hits). Asi la demo cubre todo el
+  rango de positivos de test en vez de depender de un muestreo con mala suerte
+  (con Recall@10 ~0.03 lo esperable son ~0.3 aciertos por usuario y top-10;
+  una muestra aleatoria de 30 cae sesgada hacia 0 aciertos con facilidad).
+  El spread resultante se hornea como metadata: selection_rule, n_test_min y
+  n_test_max.
 
 Uso:
   python tools/gen_data.py                       # regenera todo (requiere data/ y TensorFlow)
@@ -144,7 +160,20 @@ def build_extended_demo(a, cfg):
     order_by_idx = books.sort_values("book_id").reset_index(drop=True)
     title = order_by_idx.title.to_numpy(dtype=object)
 
-    picks = rng.choice(eval_users, min(a.demo_users, len(eval_users)), replace=False)
+    # Seleccion de demo deterministica y estratificada (T8/L11, ver docstring):
+    # ordenar los usuarios de evaluacion por (n_test, id) y tomar 30 posiciones
+    # equiespaciadas (cuantiles). Sin RNG sobre los hits y sin filtrar por hits.
+    n_test_all = np.asarray(test[eval_users].sum(1)).ravel().astype(np.int64)
+    order = np.lexsort((eval_users, n_test_all))  # primario n_test, desempate id
+    ranked = eval_users[order]
+    n_eval = len(ranked)
+    n_pick = min(a.demo_users, n_eval)
+    if n_pick < 2:
+        picks = ranked[:n_pick]
+    else:
+        # round-half-up exacto en enteros: i*(N-1)/(n_pick-1)
+        pos = {(2 * i * (n_eval - 1) + (n_pick - 1)) // (2 * (n_pick - 1)) for i in range(n_pick)}
+        picks = ranked[sorted(pos)]
     demo = []
     for u in picks:
         seen = (train[[u]] + val[[u]]).toarray().ravel() > 0
@@ -163,7 +192,9 @@ def build_extended_demo(a, cfg):
             row["recs"][m] = top
         row["n_test"] = int(test[u].sum())
         demo.append(row)
-    log(f"demo: {len(demo)} usuarios x {a.demo_k} recomendaciones")
+    nts = [row["n_test"] for row in demo]
+    log(f"demo: {len(demo)} usuarios x {a.demo_k} recomendaciones · "
+        f"n_test {min(nts)}-{max(nts)} · cuartiles de n_test sobre la muestra de evaluacion")
 
     # PCA + vecinos con los embeddings recien entrenados (igual que pipeline.main)
     from sklearn.decomposition import PCA
@@ -175,7 +206,13 @@ def build_extended_demo(a, cfg):
             xy = PCA(2, random_state=0).fit_transform(E)
             items_pca[f"{name}_{tag}_x"], items_pca[f"{name}_{tag}_y"] = xy[:, 0], xy[:, 1]
             npz[f"{name}_{tag}"] = E.astype(np.float16)
-    return demo, dict(metrics=metrics, repr_hist=hist), npz, items_pca
+    demo_payload = {
+        "selection_rule": "cuartiles de n_test sobre la muestra de evaluacion",
+        "n_test_min": int(min(nts)),
+        "n_test_max": int(max(nts)),
+        "users": demo,
+    }
+    return demo_payload, dict(metrics=metrics, repr_hist=hist), npz, items_pca
 
 
 # ---------------------------------------------------------------- secciones
@@ -315,7 +352,8 @@ def write_neighbors(a, items, embs, out_dir: Path, pool_size=500, k=10) -> None:
 
 def write_demo(a, demo, out_dir: Path) -> None:
     (out_dir / "demo.json").write_text(json.dumps(demo, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
-    log(f"demo.json {len(demo)} usuarios")
+    n = len(demo["users"]) if isinstance(demo, dict) else len(demo)
+    log(f"demo.json {n} usuarios")
 
 
 def write_popular(a, res, out_dir: Path, n=60) -> None:
@@ -367,6 +405,17 @@ def main() -> None:
     else:
         paths_or_die(a)
         res, items, embs, demo = load_artifacts(a)
+        if isinstance(demo, list):
+            # artifacts antiguos: la demo venia como lista sin metadata. Se envuelve
+            # en el mismo esquema (users + regla honesta: no es la seleccion
+            # estratificada de T8, que solo produce --retrain).
+            nts = [int(r.get("n_test", 0)) for r in demo]
+            demo = {
+                "selection_rule": "muestra original del pipeline (sin regla estratificada)",
+                "n_test_min": min(nts) if nts else 0,
+                "n_test_max": max(nts) if nts else 0,
+                "users": demo,
+            }
 
     write_summary(a, res, out_dir)
     write_books(a, res, out_dir)
