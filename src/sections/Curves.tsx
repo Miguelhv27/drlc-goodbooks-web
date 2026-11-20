@@ -40,9 +40,9 @@ export default function Curves() {
         modelo: TORRES[k],
       };
     });
-    const nd: { epoca: number; modelo: string; ndcg: number }[] = [];
+    const nd: { epoca: number; modelo: string; ndcg: number; pct: number }[] = [];
     for (const [k, h] of Object.entries(hist)) {
-      h.val_ndcg?.forEach((v, i) => nd.push({ epoca: i + 1, modelo: TORRES[k], ndcg: v }));
+      h.val_ndcg?.forEach((v, i) => nd.push({ epoca: i + 1, modelo: TORRES[k], ndcg: v, pct: v * 100 }));
     }
     const g: { epoca: number; modelo: string; brecha: number }[] = [];
     for (const [k, h] of Object.entries(hist)) {
@@ -111,12 +111,12 @@ export default function Curves() {
       <div className="tarjeta p-4">
         <div style={{ height: 360 }}>
           <ResponsiveContainer width="100%" height="100%">
-            <ComposedChart margin={{ top: 8, right: 12, left: -8, bottom: 0 }}>
+            <ComposedChart margin={{ top: 8, right: 24, left: 4, bottom: 20 }}>
               <CartesianGrid stroke={GRID} strokeDasharray="3 3" />
-              <XAxis dataKey="epoca" type="number" domain={[1, epocas]} ticks={Array.from({ length: epocas }, (_, i) => i + 1)} tick={tick} tickLine={{ stroke: "#8a5a3b" }} axisLine={{ stroke: "#8a5a3b" }} label={{ value: "Época", position: "insideBottom", offset: -2, fill: TINTA, fontSize: 12 }} />
-              <YAxis tick={tick} tickLine={{ stroke: "#8a5a3b" }} axisLine={{ stroke: "#8a5a3b" }} domain={["auto", "auto"]} tickFormatter={(v) => Number(v).toFixed(2)} label={{ value: "Pérdida", angle: -90, position: "insideLeft", fill: TINTA, fontSize: 12 }} />
+              <XAxis dataKey="epoca" type="number" domain={[1, epocas]} ticks={Array.from({ length: epocas }, (_, i) => i + 1)} tick={tick} tickLine={{ stroke: "#8a5a3b" }} axisLine={{ stroke: "#8a5a3b" }} label={{ value: "Época", position: "insideBottom", offset: 6, fill: TINTA, fontSize: 12 }} />
+              <YAxis width={56} tick={tick} tickLine={{ stroke: "#8a5a3b" }} axisLine={{ stroke: "#8a5a3b" }} domain={["auto", "auto"]} tickFormatter={(v) => Number(v).toFixed(2)} label={{ value: "Pérdida", angle: -90, position: "insideLeft", offset: 6, fill: TINTA, fontSize: 12 }} />
               <Tooltip contentStyle={tooltipContenido} formatter={(v: number | string, name: string) => [fNum(Number(v)), name]} labelFormatter={(l) => `Época ${l}`} />
-              <ReferenceLine y={azar} stroke={TINTA} strokeDasharray="4 5" label={{ value: `Azar: ln(${fInt(summary.config.batch)}) = ${fNum(azar, 2)}`, position: "right", fill: TINTA, fontSize: 11 }} />
+              <ReferenceLine y={azar} stroke={TINTA} strokeDasharray="4 5" label={{ value: `Azar: ln(${fInt(summary.config.batch)}) = ${fNum(azar, 2)}`, position: "insideRight", fill: TINTA, fontSize: 11 }} />
               <Line data={idata} dataKey="perdida" name={`${TORRES.dos_torres_id} · entrenamiento`} stroke={BORDO} strokeWidth={2.5} dot={{ r: 3, fill: BORDO }} />
               <Line data={vdata} dataKey="perdida" name={`${TORRES.dos_torres_id} · validación`} stroke={BORDO} strokeWidth={2.5} strokeDasharray="7 5" dot={{ r: 3, fill: "#fff" }} />
               <Line data={mdata} dataKey="perdida" name={`${TORRES.dos_torres_meta} · entrenamiento`} stroke={VERDE} strokeWidth={2.5} dot={{ r: 3, fill: VERDE }} />
@@ -138,27 +138,30 @@ export default function Curves() {
 
       {hayNdcg && (
         <div className="tarjeta p-4 mt-6">
-          <h3 className="titulo-h3 mb-2">NDCG@10 de validación por época (señal de selección)</h3>
+          <h3 className="titulo-h3 mb-2">NDCG@10 de validación por época, en porcentaje (señal de selección)</h3>
           <div style={{ height: 300 }}>
             <ResponsiveContainer width="100%" height="100%">
-              <ComposedChart margin={{ top: 8, right: 12, left: -8, bottom: 0 }}>
+              <ComposedChart margin={{ top: 8, right: 24, left: 4, bottom: 20 }}>
                 <CartesianGrid stroke={GRID} strokeDasharray="3 3" vertical={false} />
-                <XAxis dataKey="epoca" type="number" domain={[1, epocas]} ticks={Array.from({ length: epocas }, (_, i) => i + 1)} tick={tick} tickLine={{ stroke: "#8a5a3b" }} axisLine={{ stroke: "#8a5a3b" }} label={{ value: "Época", position: "insideBottom", offset: -2, fill: TINTA, fontSize: 12 }} />
-                <YAxis tick={tick} tickLine={{ stroke: "#8a5a3b" }} axisLine={{ stroke: "#8a5a3b" }} domain={["auto", "auto"]} tickFormatter={(v) => Number(v).toFixed(4)} label={{ value: "NDCG@10", angle: -90, position: "insideLeft", fill: TINTA, fontSize: 12 }} />
-                <Tooltip contentStyle={tooltipContenido} formatter={(v: number | string, name: string) => [fNum(Number(v), 4), name]} labelFormatter={(l) => `Época ${l}`} />
-                <Line data={ndcgFilas.filter((p) => p.modelo === TORRES.dos_torres_id)} dataKey="ndcg" name={`${TORRES.dos_torres_id} · NDCG@10 validación`} stroke={BORDO} strokeWidth={2.5} dot={{ r: 3, fill: BORDO }} />
-                <Line data={ndcgFilas.filter((p) => p.modelo === TORRES.dos_torres_meta)} dataKey="ndcg" name={`${TORRES.dos_torres_meta} · NDCG@10 validación`} stroke={VERDE} strokeWidth={2.5} dot={{ r: 3, fill: VERDE }} />
+                <XAxis dataKey="epoca" type="number" domain={[1, epocas]} ticks={Array.from({ length: epocas }, (_, i) => i + 1)} tick={tick} tickLine={{ stroke: "#8a5a3b" }} axisLine={{ stroke: "#8a5a3b" }} label={{ value: "Época", position: "insideBottom", offset: 6, fill: TINTA, fontSize: 12 }} />
+                <YAxis width={56} tick={tick} tickLine={{ stroke: "#8a5a3b" }} axisLine={{ stroke: "#8a5a3b" }} domain={[0, "auto"]} tickFormatter={(v) => `${fNum(Number(v), 1)} %`} label={{ value: "NDCG@10 (%)", angle: -90, position: "insideLeft", offset: 6, fill: TINTA, fontSize: 12 }} />
+                <Tooltip contentStyle={tooltipContenido} formatter={(v: number | string, name: string) => [`${fNum(Number(v), 2)} %`, name]} labelFormatter={(l) => `Época ${l}`} />
+                <Line data={ndcgFilas.filter((p) => p.modelo === TORRES.dos_torres_id)} dataKey="pct" name={`${TORRES.dos_torres_id} · NDCG@10 validación (%)`} stroke={BORDO} strokeWidth={2.5} dot={{ r: 3, fill: BORDO }} />
+                <Line data={ndcgFilas.filter((p) => p.modelo === TORRES.dos_torres_meta)} dataKey="pct" name={`${TORRES.dos_torres_meta} · NDCG@10 validación (%)`} stroke={VERDE} strokeWidth={2.5} dot={{ r: 3, fill: VERDE }} />
                 <Legend verticalAlign="top" wrapperStyle={leyendaTexto} />
-                <ReferenceLine x={epocas} stroke={LATON} strokeDasharray="2 4" label={{ value: "parada del entrenamiento", position: "right", fill: TINTA, fontSize: 11 }} />
+                <ReferenceLine x={epocas} stroke={LATON} strokeDasharray="2 4" label={{ value: "parada", position: "insideTopRight", fill: TINTA, fontSize: 11 }} />
                 {mejores.filter((p) => typeof p.yNdcg === "number").map((p) => (
-                  <ReferenceDot key={`nd-${p.modelo}`} x={p.epoca} y={p.yNdcg as number} r={9} fill="none" stroke={LATON} strokeWidth={3} shape={Rombo} ifOverflow="extendDomain" />
+                  <ReferenceDot key={`nd-${p.modelo}`} x={p.epoca} y={(p.yNdcg as number) * 100} r={9} fill="none" stroke={LATON} strokeWidth={3} shape={Rombo} ifOverflow="extendDomain" />
                 ))}
               </ComposedChart>
             </ResponsiveContainer>
           </div>
           <p className="mt-2 text-[0.8rem] text-gris" style={{ fontFamily: leyendaTexto.fontFamily }}>
             Esta es la métrica que decide: el rombo marca el pico de cada torre y la línea vertical el punto de parada.
-            Los pesos de la época del pico son los que alimentan Resultados, Representaciones y Demo.
+            Los pesos de la época del pico son los que alimentan Resultados, Representaciones y Demo. La escala es
+            porcentual (5,3 % = 0,053): el NDCG@10 expresado de 0 a 100 — <strong>no es accuracy</strong>, es la misma
+            métrica de ranking de siempre, más fácil de leer. El eje arranca en 0 y el techo lo fija el dato: con un
+            axis 0–100 la curva quedaría aplastada contra el piso porque estos valores viven entre 4 % y 6 %.
           </p>
         </div>
       )}
@@ -193,7 +196,7 @@ export default function Curves() {
           <h3 className="titulo-h3 mb-2">Brecha entre validación y entrenamiento</h3>
           <div style={{ height: 260 }}>
             <ResponsiveContainer width="100%" height="100%">
-              <ComposedChart data={gap} margin={{ top: 6, right: 8, left: -12, bottom: 0 }}>
+              <ComposedChart data={gap} margin={{ top: 6, right: 12, left: 2, bottom: 16 }}>
                 <CartesianGrid stroke={GRID} strokeDasharray="3 3" vertical={false} />
                 <XAxis dataKey="epoca" tick={{ ...tick, fontSize: 10.5 }} tickLine={{ stroke: "#8a5a3b" }} axisLine={{ stroke: "#8a5a3b" }} />
                 <YAxis tick={tick} tickLine={{ stroke: "#8a5a3b" }} axisLine={{ stroke: "#8a5a3b" }} tickFormatter={(v) => Number(v).toFixed(2)} />
