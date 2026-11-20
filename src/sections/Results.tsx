@@ -85,9 +85,9 @@ export default function Results() {
       title="Resultados preliminares"
       lead={
         <>
-          EvaluaciÃ³n sobre <strong>{fInt(summary.run.n_eval_users)}</strong> usuarios con libros en test, ordenando los{" "}
-          <strong>{fInt(summary.eda.n_books)}</strong> libros del catÃ¡logo y excluyendo los ya vistos (train + validaciÃ³n).
-          Importa mÃ¡s la <strong>comparaciÃ³n entre modelos</strong> que el valor absoluto: se compite contra 10.000
+          Evaluación sobre <strong>{fInt(summary.run.n_eval_users)}</strong> usuarios con libros en test, ordenando los{" "}
+          <strong>{fInt(summary.eda.n_books)}</strong> libros del catálogo y excluyendo los ya vistos (train + validación).
+          Importa más la <strong>comparación entre modelos</strong> que el valor absoluto: se compite contra 10.000
           candidatos con un futuro deliberadamente oculto.
         </>
       }
@@ -100,7 +100,7 @@ export default function Results() {
           return (
             <Metric
               key={f}
-              label={`${FAM_LABEL[f].slice(0, -2)}${kref} Â· ${names[best]}`}
+              label={`${FAM_LABEL[f].slice(0, -2)}${kref} · ${names[best]}`}
               value={fNum(v, 4)}
               delta={`${fDelta(d)} vs. popularidad`}
               deltaGood={d >= 0}
@@ -112,7 +112,7 @@ export default function Results() {
 
       <div className="grid gap-6 xl:grid-cols-2">
         <div className="tarjeta overflow-x-auto p-4">
-          <h3 className="titulo-h3 mb-2">Tabla completa de mÃ©tricas</h3>
+          <h3 className="titulo-h3 mb-2">Tabla completa de métricas</h3>
           <table className="biblio datos text-[0.78rem]">
             <thead>
               <tr>
@@ -175,14 +175,14 @@ export default function Results() {
             </tbody>
           </table>
           <p className="mt-2 text-[0.78rem] text-gris" style={{ fontFamily: leyendaTexto.fontFamily }}>
-            Positivo = mejor que recomendar a todos lo mÃ¡s popular. Negativo = peor.
+            Positivo = mejor que recomendar a todos lo más popular. Negativo = peor.
           </p>
         </div>
       </div>
 
       <div className="mt-8">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-          <h3 className="titulo-h3">ComparaciÃ³n grÃ¡fica</h3>
+          <h3 className="titulo-h3">Comparación gráfica</h3>
           <Tabs
             value={fam}
             onChange={setFam}
@@ -215,62 +215,62 @@ export default function Results() {
           texto={
             <>
               En <strong>{key.toUpperCase()}</strong> la mejor referencia simple es <strong>{names[bb]}</strong> (
-              {fNum(met[bb][key], 4)}). La mejor versiÃ³n de dos torres es <strong>{names[bt]}</strong> (
+              {fNum(met[bb][key], 4)}). La mejor versión de dos torres es <strong>{names[bt]}</strong> (
               {fNum(met[bt][key], 4)}): {fDelta(vsBase)} respecto a esa referencia y {fDelta(vsPop)} respecto a
               popularidad.
             </>
           }
         />
         <BloqueInterpretacion
-          titulo="Â¿Ayudan los tags?"
+          titulo="¿Ayudan los tags?"
           color="#1f4b3a"
           texto={
             <>
-              Solo ID: {fNum(met.dos_torres_id[key], 4)} Â· ID + tags: {fNum(met.dos_torres_meta[key], 4)} (
+              Solo ID: {fNum(met.dos_torres_id[key], 4)} · ID + tags: {fNum(met.dos_torres_meta[key], 4)} (
               {fDelta(dif)} relativo).{" "}
               {Math.abs(dif) < 10
-                ? "La diferencia es pequeÃ±a y proviene de una sola corrida, por lo que la tomamos como una tendencia preliminar y no como una conclusiÃ³n."
+                ? "La diferencia es pequeña y proviene de una sola corrida, por lo que la tomamos como una tendencia preliminar y no como una conclusión."
                 : "La diferencia es apreciable, pero proviene de una sola corrida; falta repetir con otras semillas para confirmarla."}
             </>
           }
         />
         <BloqueInterpretacion
-          titulo="Por quÃ© los valores absolutos son bajos"
+          titulo="Por qué los valores absolutos son bajos"
           color="#b08d57"
           texto={
             <>
-              Se ordena un catÃ¡logo de {fInt(summary.eda.n_books)} libros, el split es cronolÃ³gico y solo se usa como
-              â€œverdadâ€ la parte mÃ¡s reciente del historial: el resto de los gustos del usuario queda oculto. Por eso
-              importa mÃ¡s la comparaciÃ³n entre modelos que el valor absoluto.
+              Se ordena un catálogo de {fInt(summary.eda.n_books)} libros, el split es cronológico y solo se usa como
+              “verdad” la parte más reciente del historial: el resto de los gustos del usuario queda oculto. Por eso
+              importa más la comparación entre modelos que el valor absoluto.
             </>
           }
         />
       </div>
 
       <TheoryCard>
-        <p className="mb-2 font-semibold">Glosario de mÃ©tricas</p>
+        <p className="mb-2 font-semibold">Glosario de métricas</p>
         <ul className="list-disc space-y-1.5 pl-5">
           <li>
-            <strong>Recall@k</strong>: de los libros que el usuario leyÃ³ despuÃ©s (escondidos), quÃ© fracciÃ³n aparece en
+            <strong>Recall@k</strong>: de los libros que el usuario leyó después (escondidos), qué fracción aparece en
             las primeras <em>k</em> recomendaciones.
           </li>
           <li>
-            <strong>NDCG@k</strong>: como Recall, pero da mÃ¡s puntos si los aciertos aparecen en los primeros lugares de
+            <strong>NDCG@k</strong>: como Recall, pero da más puntos si los aciertos aparecen en los primeros lugares de
             la lista.
           </li>
           <li>
-            <strong>MAP@k</strong>: promedio de la precisiÃ³n calculada en cada posiciÃ³n donde hubo un acierto; premia
+            <strong>MAP@k</strong>: promedio de la precisión calculada en cada posición donde hubo un acierto; premia
             acertar temprano y varias veces.
           </li>
           <li>
-            <strong>k</strong>: tamaÃ±o de la lista recomendada (por ejemplo, 10 libros). Con k grande cualquier mÃ©todo
-            sube: por eso se comparan <em>curvas</em>, no un nÃºmero suelto.
+            <strong>k</strong>: tamaño de la lista recomendada (por ejemplo, 10 libros). Con k grande cualquier método
+            sube: por eso se comparan <em>curvas</em>, no un número suelto.
           </li>
         </ul>
         <p className="mt-3">
-          <strong>Â¿Por quÃ© es difÃ­cil superar a popularidad?</strong> Porque el test tambiÃ©n estÃ¡ dominado por libros
-          famosos: recomendar â€œlo de siempreâ€ ya acierta una fracciÃ³n nada despreciable. Un modelo de embeddings solo
-          gana cuando personaliza de verdad â€” y lo medimos mirando NDCG, que penaliza el orden.
+          <strong>¿Por qué es difícil superar a popularidad?</strong> Porque el test también está dominado por libros
+          famosos: recomendar “lo de siempre” ya acierta una fracción nada despreciable. Un modelo de embeddings solo
+          gana cuando personaliza de verdad — y lo medimos mirando NDCG, que penaliza el orden.
         </p>
       </TheoryCard>
     </Section>

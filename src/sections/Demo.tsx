@@ -85,7 +85,7 @@ export default function Demo() {
 
       <div className="grid gap-5 lg:grid-cols-2 xl:grid-cols-3">
         {modelos.map((mo) => (
-          <div key={mo} className="tarjeta p-4" style={{ borderTop: `4px solid ${COLOR_MODELO[mo]}` }}>
+          <div key={mo} className="tarjeta min-w-0 p-4" style={{ borderTop: `4px solid ${COLOR_MODELO[mo]}` }}>
             <div className="mb-2 flex items-baseline justify-between gap-2">
               <h4 className="font-titulo text-[0.88rem] font-bold text-nogal">{names[mo]}</h4>
               <span
@@ -124,8 +124,9 @@ export default function Demo() {
       </div>
 
       <div className="mt-8 grid gap-6 lg:grid-cols-2">
-        <div className="ficha ficha-laton p-4">
+        <div className="ficha ficha-laton min-w-0 p-4">
           <h4 className="font-titulo mb-2 text-[0.9rem] font-bold text-nogal">Resumen numérico de esta corrida</h4>
+          <div className="overflow-x-auto">
           <table className="biblio datos text-[0.8rem]">
             <thead>
               <tr>
@@ -146,6 +147,7 @@ export default function Demo() {
               ))}
             </tbody>
           </table>
+          </div>
           <p className="mt-2 text-[0.76rem] leading-relaxed text-gris">
             El NDCG@10 global es sobre {fInt(summary.run.n_eval_users)} usuarios; en un solo usuario la varianza es
             enorme — lo que ves aquí puede no coincidir con el promedio, y esa es la razón de reportar métricas sobre
@@ -192,7 +194,7 @@ function ColumnaListas({
   hid?: Set<number>;
 }) {
   return (
-    <div className="tarjeta p-4">
+    <div className="tarjeta min-w-0 p-4">
       <h3 className="titulo-h3 mb-1" style={{ color }}>
         {titulo}
       </h3>

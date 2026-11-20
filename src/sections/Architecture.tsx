@@ -16,41 +16,42 @@ const SALIDA = "#eadbb4";
 const PERDIDA = "#e9d3cf";
 
 function diagrama(meta: boolean, dim: number, logq: boolean): { nodos: Nodo[]; aristas: Arista[] } {
-  const U = (i: number, label: string, fill?: string, sub?: string): Nodo =>
-    ({ id: `u${i}`, label, x: 20, y: 14 + i * 62, w: 168, h: 48, fill, sub });
+  const W = 230;
+  const H = 54;
+  const P = 80;
+  const y = (i: number) => 16 + i * P;
+  const xU = 30;
+  const xI = meta ? 310 : 320;
+  const xT = 590;
+  const sX = 165;
+  const ultimaFila = meta ? 5 : 4;
+  const sY = y(ultimaFila) + H + 34;
+  const U = (i: number, label: string, fill?: string): Nodo => ({ id: `u${i}`, label, x: xU, y: y(i), w: W, h: H, fill });
+  const I = (i: number, fila: number, label: string, fill?: string): Nodo => ({ id: `i${i}`, label, x: xI, y: y(fila), w: W, h: H, fill });
   const nodos: Nodo[] = [
     U(0, "ID de usuario"),
     U(1, `Embedding ${dim}`),
     U(2, `Dense ${2 * dim}\nReLU`),
     U(3, `Dense ${dim}`),
     U(4, "Normalización L2", LLENO),
+    I(0, 0, "ID de libro"),
+    I(1, 1, `Embedding ID ${dim}`),
   ];
-  const I = (i: number, label: string, fill?: string): Nodo =>
-    ({ id: `i${i}`, label, x: meta ? 300 : 250, y: 14 + i * 62, w: meta ? 168 : 168, h: 48, fill });
-  nodos.push(
-    I(0, "ID de libro"),
-    I(1, `Embedding ID ${dim}`),
-  );
   if (meta) {
     nodos.push(
-      { id: "t0", label: "Tags TF-IDF\n(fijos, no entrenables)", x: 530, y: 14, w: 176, h: 48, fill: TAGS },
-      { id: "t1", label: `Dense ${dim}\nReLU`, x: 530, y: 76, w: 176, h: 48, fill: TAGS },
-      { id: "c", label: `Concatenar\n${2 * dim}`, x: 530, y: 176, w: 176, h: 48, fill: LLENO },
-      I(2, `Dense ${2 * dim}\nReLU`),
-      I(3, `Dense ${dim}`),
-      I(4, "Normalización L2", LLENO),
+      { id: "t0", label: "Tags TF-IDF\n(fijos, no entrenables)", x: xT, y: y(0), w: W, h: H, fill: TAGS },
+      { id: "t1", label: `Dense ${dim}\nReLU`, x: xT, y: y(1), w: W, h: H, fill: TAGS },
+      { id: "c", label: `Concatenar\n${2 * dim}`, x: xT, y: y(2), w: W, h: H, fill: LLENO },
+      I(2, 3, `Dense ${2 * dim}\nReLU`),
+      I(3, 4, `Dense ${dim}`),
+      I(4, 5, "Normalización L2", LLENO),
     );
   } else {
-    nodos.push(
-      I(2, `Dense ${2 * dim}\nReLU`),
-      I(3, `Dense ${dim}`),
-      I(4, "Normalización L2", LLENO),
-    );
+    nodos.push(I(2, 2, `Dense ${2 * dim}\nReLU`), I(3, 3, `Dense ${dim}`), I(4, 4, "Normalización L2", LLENO));
   }
-  const sx = meta ? 300 : 250;
   nodos.push(
-    { id: "s", label: `Producto punto / τ${logq ? "\n− log Q" : ""}`, x: sx + (meta ? 84 : 60), y: meta ? 176 + 8 : 14 + 4 * 62 + 8, w: 170, h: 44, fill: SALIDA },
-    { id: "l", label: "Pérdida softmax\nnegativos in-batch", x: sx + (meta ? 84 : 60), y: meta ? 176 + 66 : 14 + 4 * 62 + 66, w: 170, h: 44, fill: PERDIDA },
+    { id: "s", label: `Producto punto / τ${logq ? "\n− log Q" : ""}`, x: sX, y: sY, w: 240, h: H, fill: SALIDA },
+    { id: "l", label: "Pérdida softmax\nnegativos in-batch", x: sX, y: sY + 70, w: 240, h: H, fill: PERDIDA },
   );
   const aristas: Arista[] = [
     { from: "u0", to: "u1" }, { from: "u1", to: "u2" }, { from: "u2", to: "u3" }, { from: "u3", to: "u4" },
@@ -58,7 +59,7 @@ function diagrama(meta: boolean, dim: number, logq: boolean): { nodos: Nodo[]; a
   ];
   if (meta) {
     aristas.push(
-      { from: "i1", to: "c" }, { from: "i0", to: "t0" }, { from: "t0", to: "t1" }, { from: "t1", to: "c" },
+      { from: "i0", to: "t0" }, { from: "t0", to: "t1" }, { from: "i1", to: "c" }, { from: "t1", to: "c" },
       { from: "c", to: "i2" }, { from: "i2", to: "i3" }, { from: "i3", to: "i4" },
       { from: "u4", to: "s" }, { from: "i4", to: "s" }, { from: "s", to: "l" },
     );
@@ -104,10 +105,12 @@ export default function Architecture() {
         />
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-[1.05fr_1fr]">
-        <div>
-          <FlowDiagram nodos={nodos} aristas={aristas} alto={m === "dos_torres_meta" ? 280 : 330} />
-          <TheoryCard>
+      <div className="mb-8">
+        <FlowDiagram nodos={nodos} aristas={aristas} />
+      </div>
+
+      <div className="grid gap-6 lg:grid-cols-[1fr_1.15fr]">
+        <TheoryCard>
             <p>
               <strong>¿Qué es un embedding?</strong> Un ID de libro (un número como 4321) no dice nada por sí mismo. Un
               embedding convierte ese ID en una lista de 64 decimales que la red <em>aprende</em>: con el tiempo, esos 64
@@ -125,8 +128,7 @@ export default function Architecture() {
               Ojo con la palabra <em>fija</em>: esa matriz de tags se congela como constantes dentro de una capa y no se
               entrena — lo entrenable es la proyección densa que la comprime.
             </p>
-          </TheoryCard>
-        </div>
+        </TheoryCard>
 
         <div className="flex flex-col gap-5">
           <h3 className="titulo-h3">Cómo se entrena</h3>

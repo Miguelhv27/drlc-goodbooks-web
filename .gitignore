@@ -8,5 +8,6 @@ __pycache__/
 .DS_Store
 Thumbs.db
 *.local
+*.log
 .vercel
 tsconfig.tsbuildinfo

@@ -113,8 +113,9 @@ export default function Dataset() {
       </div>
 
       <div className="mt-8 grid gap-6 lg:grid-cols-[1.1fr_1fr]">
-        <div>
+        <div className="min-w-0">
           <h3 className="titulo-h3 mb-3">Preparación aplicada</h3>
+          <div className="overflow-x-auto">
           <table className="biblio">
             <thead>
               <tr><th>Paso</th><th>Detalle</th></tr>
@@ -138,9 +139,10 @@ export default function Dataset() {
               <tr><td className="font-semibold">Features de contenido</td><td>TF-IDF de los 500 tags más frecuentes (sin tags ruidosos ni de género)</td></tr>
             </tbody>
           </table>
+          </div>
         </div>
 
-        <div>
+        <div className="min-w-0">
           <h3 className="titulo-h3 mb-3">El catálogo, en el estante</h3>
           <div className="tarjeta p-4">
             <Carousel label="Carrusel de muestra del catálogo">

@@ -33,8 +33,19 @@ export default function FlowDiagram({ nodos, aristas, alto }: Props) {
   const H = alto ?? Math.max(...nodos.map((n) => n.y + (n.h ?? 54))) + 16;
 
   return (
-    <div className="tarjeta overflow-x-auto p-3">
-      <svg viewBox={`0 0 ${Math.max(anchoMax, 640)} ${H}`} width="100%" style={{ minWidth: anchoMax > 860 ? anchoMax * 0.78 : undefined, fontFamily: "Inter, sans-serif" }} role="img">
+    <div className="tarjeta overflow-x-auto p-4">
+      <svg
+        viewBox={`0 0 ${anchoMax} ${H}`}
+        style={{
+          width: "100%",
+          maxWidth: anchoMax,
+          height: "auto",
+          display: "block",
+          margin: "0 auto",
+          fontFamily: "Inter, sans-serif",
+        }}
+        role="img"
+      >
         <defs>
           <marker id="flecha" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto">
             <polygon points="0 0, 9 3.5, 0 7" fill={CUERO} />
@@ -46,23 +57,45 @@ export default function FlowDiagram({ nodos, aristas, alto }: Props) {
           if (!f || !t) return null;
           const fw = f.w ?? 150;
           const fh = f.h ?? 54;
+          const tw = t.w ?? 150;
           const th = t.h ?? 54;
-          const x1 = f.x + fw;
-          const y1 = f.y + fh / 2;
-          const x2 = t.x;
-          const y2 = t.y + th / 2;
-          const dx = Math.max(24, (x2 - x1) / 2);
-          const d = `M ${x1} ${y1} C ${x1 + dx} ${y1}, ${x2 - dx} ${y2}, ${x2} ${y2}`;
-          const ml = a.label ? (a.label.length * 5.6 + 10) / 2 : 0;
+          const fcx = f.x + fw / 2;
+          const fcy = f.y + fh / 2;
+          const tcx = t.x + tw / 2;
+          const tcy = t.y + th / 2;
+          let x1: number, y1: number, x2: number, y2: number, d: string;
+          if (t.x >= f.x + fw) {
+            x1 = f.x + fw;
+            y1 = fcy;
+            x2 = t.x;
+            y2 = tcy;
+            const dx = Math.max(24, (x2 - x1) / 2);
+            d = `M ${x1} ${y1} C ${x1 + dx} ${y1}, ${x2 - dx} ${y2}, ${x2} ${y2}`;
+          } else if (f.x >= t.x + tw) {
+            x1 = f.x;
+            y1 = fcy;
+            x2 = t.x + tw;
+            y2 = tcy;
+            const dx = Math.max(24, (x1 - x2) / 2);
+            d = `M ${x1} ${y1} C ${x1 - dx} ${y1}, ${x2 + dx} ${y2}, ${x2} ${y2}`;
+          } else {
+            x1 = fcx;
+            y1 = f.y + fh;
+            x2 = tcx;
+            y2 = t.y;
+            const dy = Math.max(18, (y2 - y1) / 2);
+            d = `M ${x1} ${y1} C ${x1} ${y1 + dy}, ${x2} ${y2 - dy}, ${x2} ${y2}`;
+          }
+          const ml = a.label ? (a.label.length * 6 + 12) / 2 : 0;
           const mx = (x1 + x2) / 2;
           const my = (y1 + y2) / 2;
           return (
             <g key={i}>
-              <path d={d} fill="none" stroke={CUERO} strokeWidth="1.5" markerEnd="url(#flecha)" />
+              <path d={d} fill="none" stroke={CUERO} strokeWidth="1.6" markerEnd="url(#flecha)" />
               {a.label && (
                 <>
-                  <rect x={mx - ml} y={my - 8} width={ml * 2} height={16} rx={8} fill="#f6efe2" stroke="#c9b99a" strokeWidth="0.7" />
-                  <text x={mx} y={my + 3.5} textAnchor="middle" fontSize="9.5" fill={TINTA} fontWeight={600}>
+                  <rect x={mx - ml} y={my - 9} width={ml * 2} height={18} rx={9} fill="#f6efe2" stroke="#c9b99a" strokeWidth="0.7" />
+                  <text x={mx} y={my + 3.5} textAnchor="middle" fontSize="10.5" fill={TINTA} fontWeight={600}>
                     {a.label}
                   </text>
                 </>
@@ -76,14 +109,14 @@ export default function FlowDiagram({ nodos, aristas, alto }: Props) {
           const lineas = n.label.split("\n");
           return (
             <g key={n.id}>
-              <rect x={n.x} y={n.y} width={w} height={h} rx={7} fill={n.fill ?? TARJETA} stroke={CUERO} strokeWidth="1.3" />
+              <rect x={n.x} y={n.y} width={w} height={h} rx={8} fill={n.fill ?? TARJETA} stroke={CUERO} strokeWidth="1.4" />
               {lineas.map((l, i) => (
                 <text
                   key={i}
                   x={n.x + w / 2}
-                  y={n.y + h / 2 + (i - (lineas.length - 1) / 2) * 13 + (n.sub ? -5 : 0)}
+                  y={n.y + h / 2 + (i - (lineas.length - 1) / 2) * 16 + (n.sub ? -6 : 0) + 4.5}
                   textAnchor="middle"
-                  fontSize="11"
+                  fontSize="13"
                   fontWeight={650}
                   fill={TINTA}
                 >
@@ -91,7 +124,7 @@ export default function FlowDiagram({ nodos, aristas, alto }: Props) {
                 </text>
               ))}
               {n.sub && (
-                <text x={n.x + w / 2} y={n.y + h - 9} textAnchor="middle" fontSize="8.8" fill="#5a4a3c">
+                <text x={n.x + w / 2} y={n.y + h - 10} textAnchor="middle" fontSize="10" fill="#5a4a3c">
                   {n.sub}
                 </text>
               )}

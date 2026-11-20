@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useDeferredValue, useEffect, useMemo, useState } from "react";
 import {
   CartesianGrid,
   Legend,
@@ -40,18 +40,36 @@ export default function Representations() {
   }, [m]);
 
   const r = summary.repr[m];
-  const topg = useMemo(() => genres.order.filter((g) => g !== "otro").slice(0, ng), [genres, ng]);
+  const ngDiferido = useDeferredValue(ng);
+  const generosDisponibles = useMemo(() => genres.order.filter((g) => g !== "otro").length, [genres]);
+  const topg = useMemo(
+    () => genres.order.filter((g) => g !== "otro").slice(0, Math.min(ngDiferido, generosDisponibles)),
+    [genres, ngDiferido, generosDisponibles],
+  );
+
+  const grupos = useMemo(() => {
+    if (!pts) return null;
+    const agrupar = (arr: PcaPointLite[]) => {
+      const m = new Map<string, { x: number; y: number }[]>();
+      for (const p of arr) {
+        let bucket = m.get(p.g);
+        if (!bucket) {
+          bucket = [];
+          m.set(p.g, bucket);
+        }
+        bucket.push({ x: p.x, y: p.y });
+      }
+      return m;
+    };
+    return { init: agrupar(pts.init), final: agrupar(pts.final) };
+  }, [pts]);
 
   const series = useMemo(() => {
-    if (!pts) return null;
-    const porGenero = (arr: PcaPointLite[], pref: string) =>
-      topg.map((g) => ({
-        g,
-        pref,
-        datos: arr.filter((p) => p.g === g).map((p) => ({ x: p.x, y: p.y })),
-      }));
-    return { init: porGenero(pts.init, "init"), final: porGenero(pts.final, "final") };
-  }, [pts, topg]);
+    if (!grupos) return null;
+    const porGenero = (pref: "init" | "final") =>
+      topg.map((g) => ({ g, pref, datos: grupos[pref].get(g) ?? [] }));
+    return { init: porGenero("init"), final: porGenero("final") };
+  }, [grupos, topg]);
 
   return (
     <Section
@@ -108,13 +126,15 @@ export default function Representations() {
           <span className="text-[0.84rem] text-gris">Géneros a mostrar</span>
           <input
             type="range"
-            min={3}
-            max={14}
-            value={ng}
+            min={2}
+            max={generosDisponibles}
+            step={1}
+            value={Math.min(ng, generosDisponibles)}
             onChange={(e) => setNg(Number(e.target.value))}
-            className="w-40 accent-bordo"
+            className="w-56 accent-bordo"
+            aria-label="Cantidad de géneros a mostrar"
           />
-          <span className="datos w-6 text-[0.9rem] font-bold text-nogal">{ng}</span>
+          <span className="datos w-8 text-[0.9rem] font-bold text-nogal">{ng}</span>
         </label>
       </div>
 

@@ -203,7 +203,7 @@ h1, h2, h3, h4 {
 }
 
 /* Range con acento de laton */
-input[type="range"].w-40 { accent-color: var(--color-bordo); }
+input[type="range"] { accent-color: var(--color-bordo); }
 
 /* Carrusel: scroll-snap nativo */
 .carrusel {
@@ -248,10 +248,10 @@ table.biblio tbody tr:hover { background: rgba(176, 141, 87, 0.08); }
 /* Chip de nav */
 .nav-chip {
   font-family: var(--font-data);
-  font-size: 0.74rem;
+  font-size: 0.84rem;
   font-weight: 500;
   letter-spacing: 0.01em;
-  padding: 0.32rem 0.7rem;
+  padding: 0.42rem 0.92rem;
   border-radius: 999px;
   white-space: nowrap;
   color: #d9c9a8;

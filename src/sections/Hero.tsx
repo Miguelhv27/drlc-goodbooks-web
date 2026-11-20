@@ -36,7 +36,7 @@ export default function Hero() {
           </p>
         </div>
 
-        <div className="relative" style={{ animationDelay: "0.15s" }}>
+        <div className="relative min-w-0" style={{ animationDelay: "0.15s" }}>
           <ShelfSpines className="mb-0" seed={11} />
           <div className="tarjeta border-x border-b-0 p-4">
             <Carousel label="Carrusel de libros populares">

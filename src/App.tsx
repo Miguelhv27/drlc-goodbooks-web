@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { loadStore, StoreProvider, type Store } from "./lib/store";
-import TopNav from "./components/TopNav";
+import TopNav, { SECCIONES } from "./components/TopNav";
 import Hero from "./sections/Hero";
 import Dataset from "./sections/Dataset";
 import PipelineSec from "./sections/PipelineSec";
@@ -9,9 +9,26 @@ import Curves from "./sections/Curves";
 import Results from "./sections/Results";
 import Representations from "./sections/Representations";
 import Demo from "./sections/Demo";
-import Challenges from "./sections/Challenges";
 import Footer from "./components/Footer";
 import ShelfSpines from "./components/ShelfSpines";
+
+const PAGINAS = {
+  inicio: Hero,
+  dataset: Dataset,
+  pipeline: PipelineSec,
+  arquitectura: Architecture,
+  curvas: Curves,
+  resultados: Results,
+  representaciones: Representations,
+  demo: Demo,
+} as const;
+
+export type PaginaId = keyof typeof PAGINAS;
+
+function paginaDesdeHash(): PaginaId {
+  const h = window.location.hash.replace(/^#/, "");
+  return h in PAGINAS ? (h as PaginaId) : "inicio";
+}
 
 export default function App() {
   return (
@@ -26,10 +43,21 @@ export default function App() {
 function Shell() {
   const [store, setStore] = useState<Store | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [pagina, setPagina] = useState<PaginaId>(() => paginaDesdeHash());
 
   useEffect(() => {
     loadStore().then(setStore).catch((e) => setError(String(e)));
   }, []);
+
+  useEffect(() => {
+    const onHash = () => setPagina(paginaDesdeHash());
+    window.addEventListener("hashchange", onHash);
+    return () => window.removeEventListener("hashchange", onHash);
+  }, []);
+
+  useEffect(() => {
+    window.scrollTo({ top: 0 });
+  }, [pagina]);
 
   if (error) {
     return (
@@ -54,21 +82,47 @@ function Shell() {
     );
   }
 
+  const Seccion = PAGINAS[pagina] ?? Hero;
+
   return (
     <StoreProvider value={store}>
-      <TopNav />
-      <main>
-        <Hero />
-        <Dataset />
-        <PipelineSec />
-        <Architecture />
-        <Curves />
-        <Results />
-        <Representations />
-        <Demo />
-        <Challenges />
+      <TopNav activa={pagina} />
+      <main className="flex min-h-[calc(100vh-13rem)] flex-col">
+        <div key={pagina} className="aparece grow">
+          <Seccion />
+        </div>
+        <PageNav pagina={pagina} />
       </main>
       <Footer />
     </StoreProvider>
+  );
+}
+
+/** Botones anterior/siguiente: la única forma de pasar de una sección a otra. */
+function PageNav({ pagina }: { pagina: PaginaId }) {
+  const idx = SECCIONES.findIndex((s) => s.id === pagina);
+  const prev = idx > 0 ? SECCIONES[idx - 1] : null;
+  const next = idx >= 0 && idx < SECCIONES.length - 1 ? SECCIONES[idx + 1] : null;
+  if (!prev && !next) return null;
+  return (
+    <nav
+      aria-label="Navegación entre páginas"
+      className="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-4 pb-10 sm:px-6 lg:px-8"
+    >
+      {prev ? (
+        <a href={`#${prev.id}`} className="btn-teoria px-4 py-2 text-[0.82rem]">
+          ← {prev.label}
+        </a>
+      ) : (
+        <span />
+      )}
+      {next ? (
+        <a href={`#${next.id}`} className="btn-teoria px-4 py-2 text-[0.82rem]">
+          {next.label} →
+        </a>
+      ) : (
+        <span />
+      )}
+    </nav>
   );
 }
