@@ -1,0 +1,287 @@
+[
+ {
+  "liked": [
+   "The Hunger Games (The Hunger Games, #1)",
+   "Harry Potter and the Sorcerer's Stone (Harry Potter, #1)",
+   "To Kill a Mockingbird",
+   "The Great Gatsby",
+   "Divergent (Divergent, #1)",
+   "Animal Farm"
+  ],
+  "held_out": [
+   "The Fellowship of the Ring (The Lord of the Rings, #1)",
+   "The Giver (The Giver, #1)",
+   "The Book Thief",
+   "Wuthering Heights",
+   "Ender's Game (Ender's Saga, #1)",
+   "Cinder (The Lunar Chronicles, #1)",
+   "The Dragon Reborn (Wheel of Time, #3)",
+   "Cold Sassy Tree"
+  ],
+  "recs": {
+   "popularidad": [
+    "Harry Potter and the Prisoner of Azkaban (Harry Potter, #3)",
+    "Harry Potter and the Goblet of Fire (Harry Potter, #4)",
+    "Harry Potter and the Deathly Hallows (Harry Potter, #7)",
+    "The Hobbit",
+    "Harry Potter and the Half-Blood Prince (Harry Potter, #6)"
+   ],
+   "item_knn": [
+    "The Hobbit",
+    "The Fellowship of the Ring (The Lord of the Rings, #1)",
+    "Harry Potter and the Deathly Hallows (Harry Potter, #7)",
+    "Harry Potter and the Goblet of Fire (Harry Potter, #4)",
+    "Harry Potter and the Prisoner of Azkaban (Harry Potter, #3)"
+   ],
+   "contenido": [
+    "Brisingr (The Inheritance Cycle, #3)",
+    "Inheritance (The Inheritance Cycle, #4)",
+    "The Riddle (The Books of Pellinor, #2)",
+    "Lirael (Abhorsen, #2)",
+    "The Naming (The Books of Pellinor, #1)"
+   ],
+   "dos_torres_id": [
+    "The Lightning Thief (Percy Jackson and the Olympians, #1)",
+    "The Battle of the Labyrinth (Percy Jackson and the Olympians, #4)",
+    "The Burning Bridge (Ranger's Apprentice, #2)",
+    "Bitterblue (Graceling Realm, #3)",
+    "The Lost Hero (The Heroes of Olympus, #1)"
+   ],
+   "dos_torres_meta": [
+    "The Burning Bridge (Ranger's Apprentice, #2)",
+    "Sabriel (Abhorsen,  #1)",
+    "Bitterblue (Graceling Realm, #3)",
+    "The Blue Sword (Damar, #1)",
+    "The Thief (The Queen's Thief, #1)"
+   ]
+  }
+ },
+ {
+  "liked": [
+   "Animal Farm",
+   "Catching Fire (The Hunger Games, #2)",
+   "Harry Potter and the Prisoner of Azkaban (Harry Potter, #3)",
+   "Harry Potter and the Deathly Hallows (Harry Potter, #7)",
+   "Harry Potter and the Half-Blood Prince (Harry Potter, #6)",
+   "The Secret Life of Bees"
+  ],
+  "held_out": [
+   "The Hobbit",
+   "Mockingjay (The Hunger Games, #3)",
+   "Harry Potter and the Order of the Phoenix (Harry Potter, #5)",
+   "Harry Potter and the Chamber of Secrets (Harry Potter, #2)",
+   "Lord of the Flies",
+   "Holes (Holes, #1)",
+   "The Girl Who Kicked the Hornet's Nest (Millennium, #3)",
+   "Ella Enchanted"
+  ],
+  "recs": {
+   "popularidad": [
+    "Harry Potter and the Sorcerer's Stone (Harry Potter, #1)",
+    "The Hunger Games (The Hunger Games, #1)",
+    "To Kill a Mockingbird",
+    "Harry Potter and the Goblet of Fire (Harry Potter, #4)",
+    "The Hobbit"
+   ],
+   "item_knn": [
+    "Harry Potter and the Goblet of Fire (Harry Potter, #4)",
+    "The Hunger Games (The Hunger Games, #1)",
+    "Harry Potter and the Order of the Phoenix (Harry Potter, #5)",
+    "Harry Potter and the Sorcerer's Stone (Harry Potter, #1)",
+    "Harry Potter and the Chamber of Secrets (Harry Potter, #2)"
+   ],
+   "contenido": [
+    "Commonwealth",
+    "A Spool of Blue Thread",
+    "The Memory Keeper's Daughter",
+    "We Were the Mulvaneys",
+    "The Interestings"
+   ],
+   "dos_torres_id": [
+    "Me Talk Pretty One Day",
+    "Eleanor & Park",
+    "Gone Girl",
+    "Where'd You Go, Bernadette",
+    "The Help"
+   ],
+   "dos_torres_meta": [
+    "Americanah",
+    "Gone Girl",
+    "The Brief Wondrous Life of Oscar Wao",
+    "To Kill a Mockingbird",
+    "Harry Potter and the Goblet of Fire (Harry Potter, #4)"
+   ]
+  }
+ },
+ {
+  "liked": [
+   "Divergent (Divergent, #1)",
+   "Gone Girl",
+   "A Game of Thrones (A Song of Ice and Fire, #1)",
+   "Where the Sidewalk Ends",
+   "Frankenstein",
+   "The Secret Garden"
+  ],
+  "held_out": [
+   "The Fault in Our Stars",
+   "Insurgent (Divergent, #2)",
+   "All the Light We Cannot See",
+   "The Sea of Monsters (Percy Jackson and the Olympians, #2)",
+   "The Titan's Curse (Percy Jackson and the Olympians, #3)",
+   "The Cuckoo's Calling (Cormoran Strike, #1)",
+   "Rebecca",
+   "Hatchet (Brian's Saga, #1)"
+  ],
+  "recs": {
+   "popularidad": [
+    "Harry Potter and the Sorcerer's Stone (Harry Potter, #1)",
+    "The Hunger Games (The Hunger Games, #1)",
+    "To Kill a Mockingbird",
+    "Harry Potter and the Prisoner of Azkaban (Harry Potter, #3)",
+    "Harry Potter and the Goblet of Fire (Harry Potter, #4)"
+   ],
+   "item_knn": [
+    "A Pocket for Corduroy",
+    "Curious George",
+    "Bread and Jam for Frances",
+    "The Story of Ferdinand",
+    "Charlotte's Web"
+   ],
+   "contenido": [
+    "Ramona Forever (Ramona, #7)",
+    "Otherwise Known as Sheila the Great (Fudge #2)",
+    "Ramona the Brave (Ramona, #3)",
+    "Ramona the Pest (Ramona, #2)",
+    "Beezus and Ramona (Ramona, #1)"
+   ],
+   "dos_torres_id": [
+    "The Giving Tree",
+    "Tales of a Fourth Grade Nothing (Fudge, #1)",
+    "Goodnight Moon",
+    "Charlotte's Web",
+    "The Lion, the Witch, and the Wardrobe (Chronicles of Narnia, #1)"
+   ],
+   "dos_torres_meta": [
+    "Tales of a Fourth Grade Nothing (Fudge, #1)",
+    "Little House on the Prairie (Little House, #2)",
+    "Ramona Quimby, Age 8 (Ramona, #6)",
+    "Miss Nelson Is Missing! (Miss Nelson, #1)",
+    "Charlotte's Web"
+   ]
+  }
+ },
+ {
+  "liked": [
+   "Harry Potter and the Sorcerer's Stone (Harry Potter, #1)",
+   "Twilight (Twilight, #1)",
+   "1984",
+   "Animal Farm",
+   "Catching Fire (The Hunger Games, #2)",
+   "Harry Potter and the Prisoner of Azkaban (Harry Potter, #3)"
+  ],
+  "held_out": [
+   "Of Mice and Men",
+   "The Outsiders",
+   "Room",
+   "All the Light We Cannot See",
+   "The Well of Ascension (Mistborn, #2)",
+   "The Storied Life of A.J. Fikry",
+   "The Lies of Locke Lamora (Gentleman Bastard, #1)",
+   "Hollow City (Miss Peregrine’s Peculiar Children, #2)"
+  ],
+  "recs": {
+   "popularidad": [
+    "The Hunger Games (The Hunger Games, #1)",
+    "To Kill a Mockingbird",
+    "Harry Potter and the Deathly Hallows (Harry Potter, #7)",
+    "The Hobbit",
+    "Harry Potter and the Half-Blood Prince (Harry Potter, #6)"
+   ],
+   "item_knn": [
+    "The Hunger Games (The Hunger Games, #1)",
+    "Harry Potter and the Half-Blood Prince (Harry Potter, #6)",
+    "Harry Potter and the Deathly Hallows (Harry Potter, #7)",
+    "Harry Potter and the Order of the Phoenix (Harry Potter, #5)",
+    "Divergent (Divergent, #1)"
+   ],
+   "contenido": [
+    "The Supernaturalist",
+    "The Uglies Trilogy (Uglies, #1-3)",
+    "Uglies (Uglies, #1)",
+    "Pretties (Uglies, #2)",
+    "Extras (Uglies, #4)"
+   ],
+   "dos_torres_id": [
+    "Divergent (Divergent, #1)",
+    "The Fault in Our Stars",
+    "The Hunger Games (The Hunger Games, #1)",
+    "The Book Thief",
+    "Harry Potter and the Deathly Hallows (Harry Potter, #7)"
+   ],
+   "dos_torres_meta": [
+    "The Fault in Our Stars",
+    "The Hunger Games (The Hunger Games, #1)",
+    "Divergent (Divergent, #1)",
+    "The Book Thief",
+    "The Girl on the Train"
+   ]
+  }
+ },
+ {
+  "liked": [
+   "Angels & Demons  (Robert Langdon, #1)",
+   "Catching Fire (The Hunger Games, #2)",
+   "Harry Potter and the Prisoner of Azkaban (Harry Potter, #3)",
+   "Mockingjay (The Hunger Games, #3)",
+   "Harry Potter and the Order of the Phoenix (Harry Potter, #5)",
+   "Harry Potter and the Chamber of Secrets (Harry Potter, #2)"
+  ],
+  "held_out": [
+   "Me Before You (Me Before You, #1)",
+   "The Selection (The Selection, #1)",
+   "Bared to You (Crossfire, #1)",
+   "Reflected in You (Crossfire, #2)",
+   "The Elite (The Selection, #2)",
+   "The One (The Selection, #3)",
+   "Perfect Chemistry (Perfect Chemistry, #1)",
+   "Easy (Contours of the Heart, #1)"
+  ],
+  "recs": {
+   "popularidad": [
+    "Harry Potter and the Sorcerer's Stone (Harry Potter, #1)",
+    "The Hunger Games (The Hunger Games, #1)",
+    "To Kill a Mockingbird",
+    "The Hobbit",
+    "1984"
+   ],
+   "item_knn": [
+    "The Hunger Games (The Hunger Games, #1)",
+    "Divergent (Divergent, #1)",
+    "City of Bones (The Mortal Instruments, #1)",
+    "Harry Potter and the Sorcerer's Stone (Harry Potter, #1)",
+    "Twilight (Twilight, #1)"
+   ],
+   "contenido": [
+    "We'll Always Have Summer (Summer, #3)",
+    "Ignite Me (Shatter Me, #3)",
+    "The Summer I Turned Pretty (Summer, #1)",
+    "Shatter Me (Shatter Me, #1)",
+    "The Darkest Minds (The Darkest Minds, #1)"
+   ],
+   "dos_torres_id": [
+    "I Am Number Four (Lorien Legacies, #1)",
+    "The Lucky One",
+    "Breaking Dawn (Twilight, #4)",
+    "Divergent (Divergent, #1)",
+    "City of Bones (The Mortal Instruments, #1)"
+   ],
+   "dos_torres_meta": [
+    "Divergent (Divergent, #1)",
+    "Breaking Dawn (Twilight, #4)",
+    "Eclipse (Twilight, #3)",
+    "New Moon (Twilight, #2)",
+    "The Hunger Games (The Hunger Games, #1)"
+   ]
+  }
+ }
+]

@@ -53,7 +53,8 @@ ROOT = Path(__file__).resolve().parents[1]  # web/
 
 
 def _find_run() -> Path:
-    """Repo del pipeline: override por env/flag o buscado en los niveles de arriba."""
+    """Repo del pipeline: override por env/flag, el sibling de desarrollo
+    (goodbooks-recommender) o el backend/ commiteado en este repo (clone fresco)."""
     cand = [os.environ.get("DRLC_RUN")]
     base = ROOT
     for up in (2, 1, 3, 4):
@@ -61,6 +62,7 @@ def _find_run() -> Path:
             cand.append(str(base.parents[up - 1] / "goodbooks-recommender"))
         except IndexError:
             pass
+    cand.append(str(ROOT / "backend"))
     for c in cand:
         if c and (Path(c) / "artifacts" / "results.json").exists():
             return Path(c)

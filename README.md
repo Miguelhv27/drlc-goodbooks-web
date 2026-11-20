@@ -20,8 +20,15 @@ Integrantes: Miguel Ángel Hernández Vargas · Juan Sebastián Fajardo Acevedo
 
 ## De dónde salen los datos
 
+El **pipeline completo vive en este repo, en `backend/`** (ver `backend/README.md`):
+`pipeline.py`, `requirements.txt`, los `artifacts/` ya generados (`results.json`,
+`embeddings.npz`, `items.csv`, `demo.json`) y la evidencia de experimentación en
+`backend/tools/experimentos*_results.json`. Ese es el componente que **exporta los
+resultados que usa la página** — el dataset de Kaggle (`backend/data/`, ~88 MB) no va
+commiteado; se descarga aparte (instrucciones en `backend/README.md`).
+
 `public/data/*.json` son artefactos **hornados**, generados con `tools/gen_data.py`, que
-corre el pipeline original (`goodbooks-recommender/pipeline.py`) con la **misma semilla 42**
+corre el pipeline de `backend/` con la **misma semilla 42**
 y los mismos hiperparámetros de `results.json` (dim 64, batch 2048, τ 0.05, logQ, máximo
 10 épocas con early stopping sobre NDCG@10 de validación —paciencia 2, la curva real se
 detuvo en la época 6—, 15.000 usuarios). El script valida antes de escribir que el

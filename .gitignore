@@ -11,3 +11,6 @@ Thumbs.db
 *.log
 .vercel
 tsconfig.tsbuildinfo
+
+# dataset Kaggle (~88 MB): no se commitea (ver backend/README.md)
+backend/data/

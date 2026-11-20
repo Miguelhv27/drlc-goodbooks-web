@@ -1,0 +1,13 @@
+# Versiones exactas del entorno de desarrollo (Python 3.14.6) verificado con
+# importlib.metadata el 2026-11-19. Fijadas para reproduccion (S5).
+streamlit==1.59.2
+pandas==3.0.3
+numpy==2.4.6
+scipy==1.18.0
+scikit-learn==1.9.0
+altair==6.2.2
+jinja2==3.1.6
+# tensorflow==2.22.0rc0  # SOLO para pipeline.py (train/eval local o Colab).
+# Se deja comentado a proposito: el deploy del panel (app.py) no importa TF y
+# no debe arrastrar la instalacion de ~600 MB. Para correr el pipeline:
+#   pip install "tensorflow==2.22.0rc0"
