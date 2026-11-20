@@ -50,7 +50,7 @@ tiempo de render, sin valores hardcoded:
 |---|---|---|
 | `bridge` | por torre (id/meta), etapa `init`/`final` con MRR y recall@{5,10,20} de recuperar los positivos held-out por similitud coseno contra el espacio de ítems | **Representaciones** — panel "Puente: representación ↔ desempeño" con badges de factor × y la interpretación causal (S1) |
 | `user_repr` | por torre, estadísticas `init`/`final` del espacio de usuario (n, dim, muestra, normas, coseno medio muestral) y ejemplos `knn` (usuario → 5 vecinos con sus ítems positivos) | **Representaciones** — subsection "Embeddings de usuarios" (S4) |
-| `seed_runs` | 3 corridas completas (semillas `config.seeds` = 42, 7, 2024): métricas de los 5 modelos y `val_loss` de las torres | **Resultados** — bloque "Media ± desvío entre 3 semillas" (calculado al render, S2); **Dificultades** — limitación 1; **Pipeline** — chip de semillas |
+| `seed_runs` | 3 corridas completas (semillas `config.seeds` = 42, 7, 2024): métricas de los 5 modelos y `val_loss` de las torres | **Resultados** — bloque "Media ± desvío entre 3 semillas" (calculado al render, S2); **Justificación** — conclusiones (promedios multi-semilla derivados); **Pipeline** — chip de semillas |
 | `tf_version` | versión de TensorFlow que produjo los artefactos (también en `config.tf_version`) | **Pipeline** — chip "TensorFlow {tf_version}" |
 | `history.*.val_ndcg` + `history.*.best_epoch` y `config.patience` (fase model-tuning) | curva de NDCG@10 de validación por época (positivos = val, se enmascara solo train) y época cuyos pesos se restauran al parar; `patience` del early stopping | **Curvas** — la historia ya viene truncada en la época de parada (diagnóstico honesto del nuevo stopping); el resto es trazabilidad de datos |
 
@@ -122,7 +122,7 @@ web/
 │   ├── lib/            # tipos, store de datos, paleta/heredada de app.py, textos
 │   ├── components/     # BookCover, Carousel, FlowDiagram, TheoryCard, Math, Metric…
 │   └── sections/       # Hero, Dataset, Pipeline, Architecture, Curves,
-│                       # Results, Representations, Demo, Dificultades
+│                       # Results, Representations, Demo, Justificacion
 └── tools/
     ├── gen_data.py     # hornea public/data desde el pipeline
     └── smoke.mjs       # verificación de renderizado headless
@@ -136,19 +136,19 @@ web/
   que el conteo de aciertos por usuario **subestima** el Recall real.
 - Los valores absolutos de NDCG@k son bajos *por diseño* (catálogo de 10.000 ítems,
   split cronológico, verdades ocultas): lo que se publica es la comparación entre modelos.
-- La novena sección del menú, **Dificultades** (`#dificultades`), cubre los problemas
-  encontrados durante el proyecto (binarización de ratings ≥ 4, sesgo de los negativos
-  in-batch y su corrección logQ, género como proxy ruidoso, primeras corridas con split
-  aleatorio que inflaban las métricas, límites del dataset), las limitaciones actuales
-  (la tabla principal reporta la corrida canónica de una sola semilla; la varianza
-  multi-semilla ya está disponible: 3 corridas 42/7/2024, mostradas como
-  `media ± desvío` en Resultados) y los
-  próximos pasos (reentreno con todos los usuarios, init preentrenado item2vec/NCF,
-  métricas por categoría, análisis de fairness de popularidad).
+- La novena sección del menú, **Justificación y conclusiones** (`#justificacion`), cubre la
+  justificación de cada decisión del proyecto (tarea de ranking y binarización ≥ 4, split
+  cronológico tras detectar que el aleatorio inflaba métricas, dos torres con negativos
+  in-batch + logQ, init aleatorio con su argumento, métricas por pregunta, y el tuning
+  decidido solo sobre validación — con las configs rechazadas y por qué), el proceso
+  realizado en orden y las conclusiones: la transformación medida del espacio de ítems
+  (MRR del puente init→final, pureza), el resultado honesto de que item-kNN sigue al
+  frente en la corrida canónica, y los próximos pasos (reentreno con todos los usuarios,
+  init preentrenado item2vec/NCF, métricas por categoría, análisis de fairness).
 - Regla de procedencia de números en la prosa: cada cifra del sitio o sale de un campo
   de `summary.json` (renderizada con formato) o está etiquetada explícitamente como
   *observación anecdótica de corridas intermedias, sin artefacto asociado* (así aparece
-  la anécdota de logQ "0,04 → 0,049" en Dificultades). Los paneles nuevos (puente
+  la anécdota de logQ "0,04 → 0,049" en Justificación). Los paneles nuevos (puente
   representación↔desempeño, embeddings de usuarios, media ± desvío entre semillas)
   derivan todos sus valores —incluidos deltas, factores × y posiciones ~1/MRR— de los
   campos `bridge`, `user_repr`, `seed_runs`, `tf_version` y `config.seeds` en tiempo de

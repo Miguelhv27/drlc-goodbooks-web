@@ -63,7 +63,7 @@ async function main() {
   };
 
   const info = await evalJs(`(() => {
-    const secs = ["inicio","dataset","pipeline","arquitectura","curvas","resultados","representaciones","demo","dificultades"];
+    const secs = ["inicio","dataset","pipeline","arquitectura","curvas","resultados","representaciones","demo","justificacion"];
     const found = secs.filter(id => document.getElementById(id));
     return JSON.stringify({
       found,

@@ -208,7 +208,8 @@ export default function Representations() {
           <em> ocultaría</em> justamente lo que el curso pide observar, es decir, <strong>la transformación</strong> de
           la representación durante el entrenamiento; y así el “antes vs. después” es atribuible por completo a
           nuestro pipeline. Usar embeddings preentrenados como init es una alternativa legítima que queda registrada
-          como próximo paso en <a href="#dificultades" className="font-semibold text-bordo underline decoration-laton">Dificultades</a>.
+          como próximo paso en{" "}
+          <a href="#justificacion" className="font-semibold text-bordo underline decoration-laton">Justificación y conclusiones</a>.
         </p>
         <p className="mt-2 mb-2">
           <strong>¿Qué es PCA aquí?</strong> Los vectores viven en {summary.config.dim} dimensiones. PCA es una transformación lineal que
