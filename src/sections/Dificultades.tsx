@@ -11,6 +11,7 @@ export default function Dificultades() {
   const { config: cfg, eda, metrics: met, run } = summary;
   const sp = eda.split_sizes;
   const posFull = (eda.rating_dist["4"] ?? 0) + (eda.rating_dist["5"] ?? 0);
+  const semillas = (summary.seed_runs ?? []).map((r) => r.seed).join(", ");
 
   return (
     <Section
@@ -99,10 +100,10 @@ export default function Dificultades() {
       <div className="tarjeta mb-8 p-5">
         <ol className="list-decimal space-y-2 pl-5 text-[0.92rem] leading-relaxed">
           <li>
-            <strong>Tabla principal = una corrida canónica</strong> (semilla {cfg.seed}, la del entregable). Estamos
-            agregando corridas multi-semilla: se reporta además media ± desvío entre semillas cuando está disponible
-            en <span className="datos">summary.json</span>; mientras tanto, las diferencias pequeñas entre modelos
-            deben leererse como tendencia, no como conclusión.
+            <strong>Tabla principal = una corrida canónica</strong> (semilla {cfg.seed}, la del entregable). Varianza
+            multi-semilla ya disponible: {summary.seed_runs.length} corridas ({semillas}) con media ± desvío en la tabla
+            de <a href="#resultados" className="font-semibold text-bordo underline decoration-laton">Resultados</a>;
+            las diferencias pequeñas entre modelos deben leererse contra ese rango, no como una conclusión aislada.
           </li>
           <li>
             <strong>La pérdida de validación es ruidosa</strong>: se estima sobre un número limitado de lotes, así que

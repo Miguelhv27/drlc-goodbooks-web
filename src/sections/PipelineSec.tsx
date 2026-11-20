@@ -42,6 +42,7 @@ const CONFIG_KEYS: { k: string; label: string; fmt?: (v: unknown) => string }[] 
 export default function PipelineSec() {
   const { summary } = useStore();
   const { config, eda, run } = summary;
+  const semillas = (config.seeds ?? (summary.seed_runs ?? []).map((r) => r.seed)).join(", ");
 
   return (
     <Section
@@ -101,6 +102,14 @@ export default function PipelineSec() {
               ))}
             </tbody>
           </table>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <span className="datos rounded-full border border-laton bg-papel2 px-3 py-1 text-[0.75rem] font-semibold text-cuero">
+              TensorFlow {summary.tf_version}
+            </span>
+            <span className="datos rounded-full border border-laton bg-papel2 px-3 py-1 text-[0.75rem] font-semibold text-cuero">
+              Semillas del multi-run: {semillas}
+            </span>
+          </div>
         </div>
         <div className="flex flex-col gap-4">
           <div className="ficha p-4">

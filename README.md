@@ -29,13 +29,30 @@ el mismo del entregable.
 
 | Archivo | Contenido |
 |---|---|
-| `summary.json` | config, EDA, métricas (Recall/NDCG/MAP@{5,10,20}), historia de entrenamiento, arquitectura de capas, silhouette/pureza |
+| `summary.json` | config, EDA, métricas (Recall/NDCG/MAP@{5,10,20}), historia de entrenamiento, arquitectura de capas, silhouette/pureza, `bridge`, `user_repr`, `seed_runs`, `tf_version` |
 | `books.json` | 10.000 libros: título, autores, género proxy, ratings, año, ISBN-13 |
 | `pca_<modelo>_<init\|final>.json` | puntos PCA (2D) de las representaciones de libro, muestras de 2.500 por etapa |
 | `neighbors.json` | 10 vecinos más cercanos (coseno) para el top-500 del catálogo, inicial y final |
 | `demo.json` | 30 usuarios de ejemplo: train, test escondido y top-12 de los 5 modelos (precomputado, mismo pipeline) |
 | `popular.json` | top 60 libros por valoraciones (carruseles) |
 | `genres.json` | conteos de género proxy |
+
+### Campos de `summary.json` añadidos por rubric-alignment
+
+`gen_data.py` los hornea desde los artefactos del pipeline (`results.json` + `repr`), con
+los floats redondeados a 6 decimales; el sitio los formatea con los helpers locale
+(`es-CO`: coma decimal, punto de miles). Cada sección que los consume los deriva en
+tiempo de render, sin valores hardcoded:
+
+| Campo | Qué contiene | Dónde se renderiza |
+|---|---|---|
+| `bridge` | por torre (id/meta), etapa `init`/`final` con MRR y recall@{5,10,20} de recuperar los positivos held-out por similitud coseno contra el espacio de ítems | **Representaciones** — panel "Puente: representación ↔ desempeño" con badges de factor × y la interpretación causal (S1) |
+| `user_repr` | por torre, estadísticas `init`/`final` del espacio de usuario (n, dim, muestra, normas, coseno medio muestral) y ejemplos `knn` (usuario → 5 vecinos con sus ítems positivos) | **Representaciones** — subsection "Embeddings de usuarios" (S4) |
+| `seed_runs` | 3 corridas completas (semillas `config.seeds` = 42, 7, 2024): métricas de los 5 modelos y `val_loss` de las torres | **Resultados** — bloque "Media ± desvío entre 3 semillas" (calculado al render, S2); **Dificultades** — limitación 1; **Pipeline** — chip de semillas |
+| `tf_version` | versión de TensorFlow que produjo los artefactos (también en `config.tf_version`) | **Pipeline** — chip "TensorFlow {tf_version}" |
+
+La tabla principal de Resultados y toda la demo siguen usando la **corrida canónica
+(semilla 42)**; `seed_runs` solo aporta la media ± desvío del bloque de varianza.
 
 Para regenerar todo (necesita el repo `goodbooks-recommender` al lado, con `data/` y TensorFlow):
 
@@ -92,11 +109,15 @@ web/
   in-batch y su corrección logQ, género como proxy ruidoso, primeras corridas con split
   aleatorio que inflaban las métricas, límites del dataset), las limitaciones actuales
   (la tabla principal reporta la corrida canónica de una sola semilla; la varianza
-  multi-semilla se está agregando y, cuando los artefactos la expongan, el sitio la
-  muestra como `media ± desvío`) y los
+  multi-semilla ya está disponible: 3 corridas 42/7/2024, mostradas como
+  `media ± desvío` en Resultados) y los
   próximos pasos (reentreno con todos los usuarios, init preentrenado item2vec/NCF,
   métricas por categoría, análisis de fairness de popularidad).
 - Regla de procedencia de números en la prosa: cada cifra del sitio o sale de un campo
   de `summary.json` (renderizada con formato) o está etiquetada explícitamente como
   *observación anecdótica de corridas intermedias, sin artefacto asociado* (así aparece
-  la anécdota de logQ "0,04 → 0,049" en Dificultades).
+  la anécdota de logQ "0,04 → 0,049" en Dificultades). Los paneles nuevos (puente
+  representación↔desempeño, embeddings de usuarios, media ± desvío entre semillas)
+  derivan todos sus valores —incluidos deltas, factores × y posiciones ~1/MRR— de los
+  campos `bridge`, `user_repr`, `seed_runs`, `tf_version` y `config.seeds` en tiempo de
+  render; en el sitio no hay ningún número de esos paneles escrito a mano.

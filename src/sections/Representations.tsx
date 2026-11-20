@@ -16,9 +16,10 @@ import Carousel from "../components/Carousel";
 import BookCover from "../components/BookCover";
 import TheoryCard from "../components/TheoryCard";
 import Metric from "../components/Metric";
-import { loadPca, useStore, type PcaPointLite } from "../lib/store";
-import { COLOR_MODELO, COLOR_TORRE, colorGenero, fInt, fNum } from "../lib/paleta";
+import { useStore, loadPca, type PcaPointLite } from "../lib/store";
+import { COLOR_MODELO, COLOR_TORRE, COLORES, TORRES, colorGenero, fInt, fNum } from "../lib/paleta";
 import { GRID, TINTA, leyendaTexto, tooltipContenido } from "../lib/chartTheme";
+import type { BridgeStage } from "../lib/types";
 
 type Modelo = "dos_torres_id" | "dos_torres_meta";
 
@@ -235,7 +236,192 @@ export default function Representations() {
           </p>
         )}
       </TheoryCard>
+
+      <PuentePanel />
+
+      <EmbeddingsUsuarios />
     </Section>
+  );
+}
+
+/** S1: puente cuantitativo cambio de representacion ↔ recuperacion de los positivos held-out. */
+const METRICAS_PUENTE: { k: keyof BridgeStage; label: string }[] = [
+  { k: "mrr", label: "MRR" },
+  { k: "recall@5", label: "Recall@5" },
+  { k: "recall@10", label: "Recall@10" },
+  { k: "recall@20", label: "Recall@20" },
+];
+
+function factorX(init: number, final: number): string {
+  return init > 0 ? `×${fNum(final / init, 1)}` : "—";
+}
+
+function PuentePanel() {
+  const { summary } = useStore();
+  const puente = summary.bridge;
+  const torres = (["dos_torres_id", "dos_torres_meta"] as const).filter((t) => puente?.[t]);
+  if (!puente || torres.length === 0) return null;
+  const bId = puente.dos_torres_id;
+  const bMeta = puente.dos_torres_meta;
+
+  return (
+    <div className="mt-10">
+      <h3 className="titulo-h3 mb-1">Puente: representación ↔ desempeño</h3>
+      <p className="mb-4 max-w-3xl text-[0.85rem] leading-relaxed text-gris">
+        El mismo conjunto de <strong>positivos held-out del test</strong>, recuperado solo por similitud coseno contra el
+        espacio de libros de la torre <strong>inicial</strong> (sin entrenar) vs <strong>final</strong> (entrenada): MRR
+        y Recall@k de esa recuperación pura, por torre. Estos números salen de <span className="datos">bridge</span> en{" "}
+        <span className="datos">summary.json</span>.
+      </p>
+      <div className="grid gap-6 lg:grid-cols-2">
+        {torres.map((t) => {
+          const b = puente[t];
+          return (
+            <div key={t} className="tarjeta p-4" style={{ borderTop: `3px solid ${COLOR_TORRE[t]}` }}>
+              <h4 className="mb-2 text-[0.95rem] font-bold" style={{ color: COLOR_TORRE[t] }}>{TORRES[t]}</h4>
+              <table className="biblio datos text-[0.78rem]">
+                <thead>
+                  <tr>
+                    <th>métrica</th>
+                    <th className="text-right">inicial</th>
+                    <th className="text-right">final</th>
+                    <th className="text-right">Δ</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {METRICAS_PUENTE.map(({ k, label }) => (
+                    <tr key={k}>
+                      <td className="whitespace-nowrap font-semibold text-nogal">{label}</td>
+                      <td className="text-right">{fNum(b.init[k], 4)}</td>
+                      <td className="text-right font-bold">{fNum(b.final[k], 4)}</td>
+                      <td className="whitespace-nowrap text-right">
+                        <span
+                          className="rounded-full px-2 py-0.5 text-[0.72rem] font-bold"
+                          style={{ background: "#e6d3a0", color: "#3b2a20" }}
+                        >
+                          {factorX(b.init[k], b.final[k])}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          );
+        })}
+      </div>
+
+      <TheoryCard title="Por qué esto conecta la representación con el desempeño">
+        <p>
+          Estas tarjetas son el eslabón causal del análisis. Con pesos <strong>aleatorios</strong>, el positivo held-out
+          mejor posicionado aparece, en promedio, alrededor del puesto{" "}
+          <strong>{fInt(Math.round(1 / bId.init.mrr))}</strong> de {fInt(summary.eda.n_books)} (MRR{" "}
+          {fNum(bId.init.mrr, 3)}): casi nunca se recupera. Con la torre <strong>entrenada</strong>, ese mismo positivo
+          queda en el top {Math.max(1, Math.round(1 / bId.final.mrr))} (MRR {fNum(bId.final.mrr, 2)}–
+          {fNum(bMeta.final.mrr, 2)}). La reordenación del espacio de ítems —vecinos que antes eran azar y ahora son
+          gustos compartidos— es exactamente lo que se traduce en los NDCG@k y Recall@k de la sección{" "}
+          <a href="#resultados" className="font-semibold text-bordo underline decoration-laton">Resultados</a>: allí el
+          puntaje usa además la torre de usuario; aquí se mide la recuperación pura del espacio de libros. Por eso
+          decir “los embeddings mejoraron” deja de ser una impresión visual del PCA: {factorX(bId.init.mrr, bId.final.mrr)}{" "}
+          en MRR es la prueba numérica de que el cambio de representación se convirtió en desempeño.
+        </p>
+        {bMeta && (
+          <p className="mt-2">
+            En la torre ID + tags el punto de partida <strong>no es ruido puro</strong> (~{fNum(bMeta.init.mrr, 2)} de
+            MRR inicial, frente a {fNum(bId.init.mrr, 3)} en solo-ID): la capa que procesa los tags conserva parte de su
+            estructura antes del primer batch, tal como se explica en la justificación de inicialización arriba. Por eso
+            su salto relativo es menor ({factorX(bMeta.init.mrr, bMeta.final.mrr)} vs {factorX(bId.init.mrr, bId.final.mrr)})
+            y, en cambio, su llegada es más alta.
+          </p>
+        )}
+      </TheoryCard>
+    </div>
+  );
+}
+
+/** S4: caracterizacion del espacio de embeddings de usuario + ejemplos de vecindad. */
+function EmbeddingsUsuarios() {
+  const { summary } = useStore();
+  const ur = summary.user_repr;
+  const torres = (["dos_torres_id", "dos_torres_meta"] as const).filter((t) => ur?.[t]);
+  if (!ur || torres.length === 0) return null;
+
+  return (
+    <div className="mt-10">
+      <h3 className="titulo-h3 mb-1">Embeddings de usuarios</h3>
+      <p className="mb-4 max-w-3xl text-[0.85rem] leading-relaxed text-gris">
+        La otra mitad del espacio: los vectores de usuario también se caracterizan, no solo los de ítems. Se normalizan
+        a norma 1 (por eso las normas medias y medianas salen ~1), la similitud coseno promedio se estima sobre una
+        muestra y los ejemplos muestran, para tres usuarios, sus vecinos más cercanos en el espacio de embeddings con
+        su cantidad de libros positivos.
+      </p>
+      <div className="grid gap-6 lg:grid-cols-2">
+        {torres.map((t) => {
+          const u = ur[t];
+          const dCos = u.final.cos_mean_sample - u.init.cos_mean_sample;
+          return (
+            <div key={t} className="tarjeta p-4" style={{ borderTop: `3px solid ${COLOR_TORRE[t]}` }}>
+              <h4 className="mb-3 text-[0.95rem] font-bold" style={{ color: COLOR_TORRE[t] }}>{TORRES[t]}</h4>
+
+              <div className="mb-3 grid grid-cols-2 gap-2 sm:grid-cols-3">
+                <Stat label="usuarios" value={fInt(u.init.n)} />
+                <Stat label="dimensión" value={fInt(u.init.dim)} />
+                <Stat label="muestra coseno" value={fInt(u.init.sample)} />
+                <Stat label="norma media" value={fNum(u.final.norm_mean, 3)} />
+                <Stat label="norma mediana" value={fNum(u.final.norm_median, 3)} />
+                <Stat label="ejemplos kNN" value={fInt(u.knn.length)} />
+              </div>
+
+              <div className="ficha mb-3 p-3" style={{ borderLeftColor: COLOR_TORRE[t] }}>
+                <div className="text-[0.8rem] font-semibold text-nogal">
+                  Similitud coseno media entre pares de usuarios
+                </div>
+                <div className="datos mt-1 flex flex-wrap items-baseline gap-2 text-[0.95rem]">
+                  <span className="text-gris">inicial {fNum(u.init.cos_mean_sample, 4)}</span>
+                  <span aria-hidden>→</span>
+                  <span className="font-bold text-nogal">final {fNum(u.final.cos_mean_sample, 4)}</span>
+                  <span
+                    className="rounded-full px-2 py-0.5 text-[0.72rem] font-bold"
+                    style={{ background: "#e6d3a0", color: dCos >= 0 ? "#1f4b3a" : "#7a2e2e" }}
+                  >
+                    {`${dCos >= 0 ? "+" : "−"}${fNum(Math.abs(dCos), 4)}`}
+                  </span>
+                </div>
+                <p className="mt-1.5 text-[0.78rem] leading-relaxed text-gris">
+                  {dCos >= 0
+                    ? "Tras entrenar, los vectores de usuario son en promedio más parecidos entre sí: el espacio se cohesionó alrededor de la tarea."
+                    : "Tras entrenar, los vectores de usuario son en promedio menos parecidos entre sí: el espacio se especializó y cada lector ocupa su propia región."}
+                </p>
+              </div>
+
+              <div className="grid gap-2 sm:grid-cols-3">
+                {u.knn.map((ex) => (
+                  <div key={ex.u} className="ficha p-2.5" style={{ borderLeftColor: COLORES.cuero }}>
+                    <div className="datos text-[0.7rem] font-bold text-nogal">Usuario {ex.u}</div>
+                    <ul className="mt-1 space-y-0.5">
+                      {ex.neighbors.map((nb) => (
+                        <li key={nb.v} className="text-[0.68rem] leading-snug text-tinta/85">
+                          · vecino <span className="datos font-semibold">{nb.v}</span> — {nb.pos_items} positivos
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function Stat({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-md bg-papel2 px-2.5 py-1.5">
+      <div className="datos text-[0.66rem] font-medium uppercase tracking-wide text-gris">{label}</div>
+      <div className="datos text-[0.92rem] font-bold text-nogal">{value}</div>
+    </div>
   );
 }
 

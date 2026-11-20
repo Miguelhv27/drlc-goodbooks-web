@@ -20,6 +20,8 @@ export interface Config {
   tau: number;
   logq: number;
   seed: number;
+  seeds: number[];
+  tf_version: string;
 }
 
 export interface Eda {
@@ -55,6 +57,61 @@ export interface ArchRow {
 }
 export type Arch = Record<string, { usuario: ArchRow[]; libro: ArchRow[] }>;
 
+/** Etapa del puente representacion↔desempeno: MRR y Recall@k de recuperar los
+ *  positivos held-out por similitud coseno contra el espacio de libros. */
+export interface BridgeStage {
+  mrr: number;
+  "recall@5": number;
+  "recall@10": number;
+  "recall@20": number;
+}
+
+export interface BridgeTower {
+  init: BridgeStage;
+  final: BridgeStage;
+}
+
+/** puente por modelo de dos torres (clave = id de modelo). */
+export type Bridge = Record<string, BridgeTower>;
+
+/** Estadisticos del espacio de usuarios por etapa (muestreados en el pipeline). */
+export interface UserReprStage {
+  n: number;
+  dim: number;
+  sample: number;
+  norm_mean: number;
+  norm_median: number;
+  cos_mean_sample: number;
+}
+
+/** Vecino de un usuario en el espacio de embeddings, con su cuenta de items positivos. */
+export interface UserNeighbor {
+  v: number;
+  pos_items: number;
+}
+
+export interface UserKnnExample {
+  u: number;
+  neighbors: UserNeighbor[];
+}
+
+export interface UserReprTower {
+  init: UserReprStage;
+  final: UserReprStage;
+  knn: UserKnnExample[];
+}
+
+/** representacion de usuarios por modelo de dos torres (clave = id de modelo). */
+export type UserRepr = Record<string, UserReprTower>;
+
+/** Corrida completa del pipeline para una semilla dada (metricas de todos los
+ *  modelos; val_loss solo de las dos torres). */
+export interface SeedRun {
+  seed: number;
+  metrics: Record<string, Record<string, number>>;
+  val_loss: Record<string, number>;
+}
+
 export interface Summary {
   run: RunInfo;
   config: Config;
@@ -63,6 +120,10 @@ export interface Summary {
   repr: Rep;
   history: History;
   arch: Arch;
+  bridge: Bridge;
+  user_repr: UserRepr;
+  seed_runs: SeedRun[];
+  tf_version: string;
 }
 
 /** Libro indexado por el indice interno del pipeline (orden de book_id). */
