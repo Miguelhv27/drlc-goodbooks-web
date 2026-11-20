@@ -51,7 +51,7 @@ export default function Curves() {
         const best = va.indexOf(Math.min(...va)) + 1;
         let lectura: string;
         if (best < n && va[n - 1] - Math.min(...va) > 0.02) {
-          lectura = `La validación empezó a empeorar después de la época ${best} mientras el entrenamiento seguía bajando: señal de sobreajuste. Convendría parar en esa época o regularizar.`;
+          lectura = `La validación empezó a empeorar después de la época ${best} mientras el entrenamiento seguía bajando: señal de sobreajuste. Esa señal es la que hoy corta el entrenamiento: el pipeline aplica early stopping sobre el NDCG@10 de validación y restaura los pesos de la mejor época, así que la curva termina cuando se agota la paciencia.`;
         } else if (best === n && n > 1 && va[n - 2] - va[n - 1] > 0.01) {
           lectura = "La validación seguía bajando en la última época: el modelo aún estaba aprendiendo y más épocas podrían ayudar.";
         } else {
