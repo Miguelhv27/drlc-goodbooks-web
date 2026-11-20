@@ -9,7 +9,7 @@ import Curves from "./sections/Curves";
 import Results from "./sections/Results";
 import Representations from "./sections/Representations";
 import Demo from "./sections/Demo";
-import Dificultades from "./sections/Dificultades";
+import Justificacion from "./sections/Justificacion";
 import Footer from "./components/Footer";
 import ShelfSpines from "./components/ShelfSpines";
 
@@ -22,7 +22,7 @@ const PAGINAS = {
   resultados: Results,
   representaciones: Representations,
   demo: Demo,
-  dificultades: Dificultades,
+  justificacion: Justificacion,
 } as const;
 
 export type PaginaId = keyof typeof PAGINAS;
