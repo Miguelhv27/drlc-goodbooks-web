@@ -117,10 +117,10 @@ export default function Curves() {
               <YAxis tick={tick} tickLine={{ stroke: "#8a5a3b" }} axisLine={{ stroke: "#8a5a3b" }} domain={["auto", "auto"]} tickFormatter={(v) => Number(v).toFixed(2)} label={{ value: "Pérdida", angle: -90, position: "insideLeft", fill: TINTA, fontSize: 12 }} />
               <Tooltip contentStyle={tooltipContenido} formatter={(v: number | string, name: string) => [fNum(Number(v)), name]} labelFormatter={(l) => `Época ${l}`} />
               <ReferenceLine y={azar} stroke={TINTA} strokeDasharray="4 5" label={{ value: `Azar: ln(${fInt(summary.config.batch)}) = ${fNum(azar, 2)}`, position: "right", fill: TINTA, fontSize: 11 }} />
-              <Line data={idata} dataKey="perdida" name={`${TORRES.dos_torres_id} · train`} stroke={BORDO} strokeWidth={2.5} dot={{ r: 3, fill: BORDO }} />
-              <Line data={vdata} dataKey="perdida" name={`${TORRES.dos_torres_id} · val`} stroke={BORDO} strokeWidth={2.5} strokeDasharray="7 5" dot={{ r: 3, fill: "#fff" }} />
-              <Line data={mdata} dataKey="perdida" name={`${TORRES.dos_torres_meta} · train`} stroke={VERDE} strokeWidth={2.5} dot={{ r: 3, fill: VERDE }} />
-              <Line data={nadata} dataKey="perdida" name={`${TORRES.dos_torres_meta} · val`} stroke={VERDE} strokeWidth={2.5} strokeDasharray="7 5" dot={{ r: 3, fill: "#fff" }} />
+              <Line data={idata} dataKey="perdida" name={`${TORRES.dos_torres_id} · entrenamiento`} stroke={BORDO} strokeWidth={2.5} dot={{ r: 3, fill: BORDO }} />
+              <Line data={vdata} dataKey="perdida" name={`${TORRES.dos_torres_id} · validación`} stroke={BORDO} strokeWidth={2.5} strokeDasharray="7 5" dot={{ r: 3, fill: "#fff" }} />
+              <Line data={mdata} dataKey="perdida" name={`${TORRES.dos_torres_meta} · entrenamiento`} stroke={VERDE} strokeWidth={2.5} dot={{ r: 3, fill: VERDE }} />
+              <Line data={nadata} dataKey="perdida" name={`${TORRES.dos_torres_meta} · validación`} stroke={VERDE} strokeWidth={2.5} strokeDasharray="7 5" dot={{ r: 3, fill: "#fff" }} />
               <Legend verticalAlign="top" wrapperStyle={leyendaTexto} />
               {mejores.map((p) => (
                 <ReferenceDot key={p.modelo} x={p.epoca} y={p.perdida} r={9} fill="none" stroke={LATON} strokeWidth={3} shape={Rombo} ifOverflow="extendDomain" />
