@@ -124,7 +124,7 @@ def build_extended_demo(a, cfg):
     hist = {}
     for name, feats in (("dos_torres_id", None), ("dos_torres_meta", Td)):
         log(f"entrenando {name} ...")
-        U, E0, E1, h = pipeline.train_two_tower(name, n_users, n_items, pairs, vpairs, args, feats)
+        U, U0, E0, E1, h = pipeline.train_two_tower(name, n_users, n_items, pairs, vpairs, args, feats)
         embs[name] = (U, E0, E1)
         hist[name] = h
         scorers[name] = (lambda U_, E_: (lambda u: U_[u] @ E_.T))(U, E1)
@@ -177,10 +177,33 @@ def build_extended_demo(a, cfg):
 
 
 # ---------------------------------------------------------------- secciones
+def _rounded(obj):
+    """Copia `obj` redondeando floats a 6 decimales; preserva ints/bool/str/None."""
+    if isinstance(obj, bool):
+        return obj
+    if isinstance(obj, float):
+        return round(obj, 6)
+    if isinstance(obj, dict):
+        return {k: _rounded(v) for k, v in obj.items()}
+    if isinstance(obj, (list, tuple)):
+        return [_rounded(v) for v in obj]
+    return obj
+
+
 def write_summary(a, res, out_dir: Path) -> None:
     eda, cfg = res["eda"], res["config"]
     met, rep, hist, arch = res["metrics"], res["repr"], res["history"], res.get("arch", {})
     ks_present = sorted({int(k.split("@")[1]) for m in met for k in met[m]})
+    # repr: SOLO los estadisticos escalares (silhouette/purity) para retro-compatibilidad.
+    # bridge / user_repr / user_knn son dicts/listas anidados y se hornean aparte.
+    repr_scalar = {m: {k: round(float(v), 6) for k, v in rep[m].items()
+                       if isinstance(v, (int, float)) and not isinstance(v, bool)} for m in rep}
+    bridge = {m: {"init": _rounded(rep[m].get("bridge_init")),
+                  "final": _rounded(rep[m].get("bridge_final"))} for m in rep}
+    user_repr = {m: {"init": _rounded(rep[m].get("user_repr", {}).get("init")),
+                     "final": _rounded(rep[m].get("user_repr", {}).get("final")),
+                     "knn": _rounded(rep[m].get("user_knn"))} for m in rep}
+    seed_runs = _rounded(res.get("seed_runs", []))
     summary = {
         "run": {
             "minutes": res.get("minutes"),
@@ -190,13 +213,18 @@ def write_summary(a, res, out_dir: Path) -> None:
             "ks": ks_present,
             "generated_from": "goodbooks-recommender/artifacts (seed 42)",
         },
-        "config": {k: cfg.get(k) for k in ["thr", "min_pos", "max_users", "eval_users", "dim", "epochs", "batch", "tau", "logq", "seed"]},
+        "config": {k: cfg.get(k) for k in ["thr", "min_pos", "max_users", "eval_users", "dim", "epochs", "batch", "tau", "logq", "seed", "seeds", "tf_version"]},
         "eda": eda,
         "metrics": {m: {k: round(float(v), 6) for k, v in met[m].items()} for m in met},
-        "repr": {m: {k: round(float(v), 6) for k, v in rep[m].items()} for m in rep},
+        "repr": repr_scalar,
         "history": {m: {"loss": [round(float(x), 6) for x in hist[m]["loss"]],
                         "val_loss": [round(float(x), 6) for x in hist[m]["val_loss"]]} for m in hist},
         "arch": arch,
+        # --- rubric-alignment T1 (S1/S2/S4/S5): campos nuevos, aditivos ---
+        "bridge": bridge,
+        "user_repr": user_repr,
+        "seed_runs": seed_runs,
+        "tf_version": cfg.get("tf_version"),
     }
     (out_dir / "summary.json").write_text(json.dumps(summary, ensure_ascii=False), encoding="utf-8")
     log(f"summary.json {len(json.dumps(summary)) / 1024:.0f} KiB")

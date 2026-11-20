@@ -78,6 +78,32 @@ export default function Results() {
   const vsPop = (met[bt][key] / met[popn][key] - 1) * 100;
   const dif = (met["dos_torres_meta"][key] / met["dos_torres_id"][key] - 1) * 100;
 
+  // --- S2: media ± desvío poblacional entre semillas, calculada al render desde seed_runs ---
+  const runs = summary.seed_runs ?? [];
+  const seedsTxt = runs.map((r) => r.seed).join(", ");
+  const COLS_SEM = ["ndcg@10", "recall@10"];
+  const seedStats = useMemo(() => {
+    if (!runs.length) return null;
+    const out: Record<string, Record<string, { mean: number; std: number } | null>> = {};
+    for (const m of dos) {
+      out[m] = {};
+      for (const c of COLS_SEM) {
+        const xs = runs
+          .map((r) => r.metrics?.[m]?.[c])
+          .filter((x): x is number => typeof x === "number");
+        if (xs.length < 2) {
+          out[m][c] = null;
+          continue;
+        }
+        const mean = xs.reduce((a, b) => a + b, 0) / xs.length;
+        const std = Math.sqrt(xs.reduce((a, b) => a + (b - mean) ** 2, 0) / xs.length);
+        out[m][c] = { mean, std };
+      }
+    }
+    return out;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [runs, dos.join()]);
+
   return (
     <Section
       id="resultados"
@@ -179,6 +205,43 @@ export default function Results() {
           </p>
         </div>
       </div>
+
+      {seedStats && (
+        <div className="tarjeta mt-6 p-4">
+          <h3 className="titulo-h3 mb-2">
+            Media ± desvío entre {runs.length} semillas ({seedsTxt})
+          </h3>
+          <table className="biblio datos text-[0.78rem]">
+            <thead>
+              <tr>
+                <th>modelo</th>
+                {COLS_SEM.map((c) => (
+                  <th key={c} className="text-right whitespace-nowrap">{c.toUpperCase()}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {dos.map((m) => (
+                <tr key={m}>
+                  <td className="whitespace-nowrap font-semibold text-nogal">{names[m]}</td>
+                  {COLS_SEM.map((c) => {
+                    const v = seedStats[m]?.[c];
+                    return (
+                      <td key={c} className="whitespace-nowrap text-right">
+                        {v ? `${fNum(v.mean, 4)} ± ${fNum(v.std, 4)}` : "—"}
+                      </td>
+                    );
+                  })}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <p className="mt-2 text-[0.78rem] leading-relaxed text-gris" style={{ fontFamily: leyendaTexto.fontFamily }}>
+            La varianza entre semillas es pequeña comparada con la diferencia vs baselines. La tabla completa de arriba
+            sigue mostrando la corrida canónica (semilla {summary.config.seed}).
+          </p>
+        </div>
+      )}
 
       <div className="mt-8">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">

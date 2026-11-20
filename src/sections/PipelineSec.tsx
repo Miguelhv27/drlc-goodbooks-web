@@ -42,6 +42,7 @@ const CONFIG_KEYS: { k: string; label: string; fmt?: (v: unknown) => string }[] 
 export default function PipelineSec() {
   const { summary } = useStore();
   const { config, eda, run } = summary;
+  const semillas = (config.seeds ?? (summary.seed_runs ?? []).map((r) => r.seed)).join(", ");
 
   return (
     <Section
@@ -64,15 +65,22 @@ export default function PipelineSec() {
           todo lo que sigue se vuelve a calcular. Así se evita el clásico “funcionaba en mi notebook”.
         </p>
         <p className="mt-2">
-          Aquí la cadena hace tres cosas: (1) deja solo las interacciones <em>positivas</em> (rating ≥ 4) porque
+          Aquí la cadena hace tres cosas: (1) deja solo las interacciones <em>positivas</em> (rating ≥ {config.thr}) porque
           queremos recuperar lecturas que gustaron, no todo registro; (2) corta el tiempo de cada lector en train/val/test
           de forma cronológica; (3) entrena y evalúa todos los modelos en una pasada, y guarda números y vectores en
           <code className="datos text-[0.85em]"> artifacts/</code> para que la web solo tenga que leerlos.
         </p>
         <p className="mt-2">
           Que el pipeline corra completo en ~1 minuto es <em>parte del diseño</em>: permite experimentar rápido. El
-          modo <code className="datos text-[0.85em]">--max_users 0</code> deja correr con los 53.424 usuarios cuando
+          modo <code className="datos text-[0.85em]">--max_users 0</code> deja correr con los {fInt(eda.n_users)} usuarios cuando
           ya se validó la idea.
+        </p>
+        <p className="mt-2">
+          Las dos torres parten de la <strong>inicialización aleatoria por defecto de Keras</strong> para los embeddings
+          (uniforme ~[−0.05, 0.05]) y se entrenan <strong>desde cero</strong>, sin init preentrenado: el dataset es
+          mediano y no trae corpus de texto del que transferir, y el objetivo del curso es ver la transformación de las
+          representaciones — que llega limpia cuando el punto de partida es ruido. La justificación completa está en{" "}
+          <a href="#representaciones" className="font-semibold text-bordo underline decoration-laton">Representaciones</a>.
         </p>
       </TheoryCard>
 
@@ -94,6 +102,14 @@ export default function PipelineSec() {
               ))}
             </tbody>
           </table>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <span className="datos rounded-full border border-laton bg-papel2 px-3 py-1 text-[0.75rem] font-semibold text-cuero">
+              TensorFlow {summary.tf_version}
+            </span>
+            <span className="datos rounded-full border border-laton bg-papel2 px-3 py-1 text-[0.75rem] font-semibold text-cuero">
+              Semillas del multi-run: {semillas}
+            </span>
+          </div>
         </div>
         <div className="flex flex-col gap-4">
           <div className="ficha p-4">

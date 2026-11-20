@@ -7,6 +7,7 @@ export const SECCIONES = [
   { id: "resultados", label: "Resultados" },
   { id: "representaciones", label: "Representaciones" },
   { id: "demo", label: "Demo" },
+  { id: "dificultades", label: "Dificultades" },
 ];
 
 export default function TopNav({ activa }: { activa: string }) {
